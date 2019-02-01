@@ -1,13 +1,20 @@
 import { SteemAdapter } from "./blockchain/SteemAdapter";
 import { SteemAdapterImpl } from "./blockchain/SteemAdapterImpl";
-import { BlockchainConfig } from "./blockchain/BlockchainConfig";
+export { SteemAdapterImpl as SteemAdapter };
 
-import { UnifiedSteemTransaction } from "./blockchain/UnifiedSteemTransaction";
-import { SteemOperationNumber } from "./blockchain/SteemOperationNumber";
+export { BlockchainConfig } from "./blockchain/BlockchainConfig";
+
+export { UnifiedSteemTransaction } from "./blockchain/UnifiedSteemTransaction";
+export { SteemOperationNumber } from "./blockchain/SteemOperationNumber";
 
 export {
-    SteemAdapterImpl as SteemAdapter,
-    BlockchainConfig,
-    UnifiedSteemTransaction,
-    SteemOperationNumber,
-};
+    Chainable,
+    ChainableFilter,
+    ChainableSupplier,
+    ChainableTaker,
+    ChainableTransformer,
+} from "./chainable/Chainable";
+
+export { ChainableOnError } from "./chainable/ChainableOnError";
+export { OperationNumberFilter } from "./chainable/filters/OperationNumberFilter";
+export { ChainableLimiter } from "./chainable/limiters/ChainableLimiter";
