@@ -8,21 +8,40 @@
     "node": ">=10.15"
   },
   "scripts": {
+    "check": "if echo \"$(node --version)\" | grep -q \"$(cat .nvmrc)\"; then echo \"Node version correct\"; else echo \"Node version does not match that in .nvmrc\" && exit 1; fi",
     "build:cleanbefore": "rm -rf dist",
     "build:node": "tsc",
-    "build": "npm run build:cleanbefore && npm run build:node",
-    "prepare": "NODE_ENV=production npm run build"
+    "build": "npm run check && npm run build:cleanbefore && npm run build:node",
+    "prepare": "NODE_ENV=production npm run build",
+    "test": "find src -name '*.spec.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
+    "verify": "find src -name '*.integration.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register"
   },
   "dependencies": {
+    "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "axios": "^0.18.0",
-    "ow": "^0.8.0"
+    "bluebird": "^3.5.3",
+    "lodash": "^4.17.11",
+    "ow": "^0.8.0",
+    "steem": "^0.7.4",
+    "universe-log": "^0.2.0"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.25",
+    "@types/chai": "^4.1.7",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/lodash": "^4.14.120",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.19",
+    "@types/sinon": "^7.0.5",
+    "@types/uuid": "^3.4.4",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^5.2.0",
+    "sinon": "^7.2.3",
+    "ts-node": "^8.0.2",
     "tslint": "^5.11.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "uuid": "^3.3.2"
   },
   "repository": {
     "type": "git",
