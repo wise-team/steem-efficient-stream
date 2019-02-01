@@ -12,6 +12,7 @@ export {
     ChainableSupplier,
     ChainableTaker,
     ChainableTransformer,
+    SimpleTaker
 } from "./chainable/Chainable";
 
 export { ChainableOnError } from "./chainable/ChainableOnError";
