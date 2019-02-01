@@ -1,6 +1,5 @@
 export { SteemAdapter } from "./blockchain/SteemAdapter";
 export { SteemAdapterFactory } from "./blockchain/SteemAdapterFactory";
-export { SteemAdapterMock } from "./blockchain/SteemAdapterMock";
 
 export { BlockchainConfig } from "./blockchain/BlockchainConfig";
 

@@ -1,6 +1,6 @@
 {
   "name": "steem-efficient-stream",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Efficient way to stream blocks and account history from steem blockchain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
