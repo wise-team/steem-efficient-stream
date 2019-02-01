@@ -1,6 +1,5 @@
-import { SteemAdapter } from "./blockchain/SteemAdapter";
-import { SteemAdapterImpl } from "./blockchain/SteemAdapterImpl";
-export { SteemAdapterImpl as SteemAdapter };
+export { SteemAdapter } from "./blockchain/SteemAdapter";
+export { SteemAdapterFactory } from "./blockchain/SteemAdapterFactory";
 
 export { BlockchainConfig } from "./blockchain/BlockchainConfig";
 
