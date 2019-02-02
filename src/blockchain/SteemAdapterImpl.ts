@@ -1,7 +1,8 @@
-import * as steem from "steem";
 import ow from "ow";
-import { SteemAdapter } from "./SteemAdapter";
+import * as steem from "steem";
+
 import { BlockchainConfig } from "./BlockchainConfig";
+import { SteemAdapter } from "./SteemAdapter";
 
 export class SteemAdapterImpl implements SteemAdapter {
     private options: SteemAdapter.Options;
@@ -17,7 +18,7 @@ export class SteemAdapterImpl implements SteemAdapter {
     public async getAccountHistoryAsync(
         username: string,
         from: number,
-        limit: number
+        limit: number,
     ): Promise<steem.AccountHistory.Operation[]> {
         ow(username, ow.string.nonEmpty.label("username"));
         ow(from, ow.number.greaterThanOrEqual(-1).label("from"));

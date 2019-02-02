@@ -1,26 +1,27 @@
 import ow from "ow";
 
-import { ChainableSupplier } from "../chainable/Chainable";
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
-import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
+import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { ChainableSupplier } from "../chainable/ChainableSupplier";
+
+import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
 
 export namespace AccountHistorySupplierFactory {
     export function withOptions(
         account: string,
         steemAdapter: SteemAdapter,
-        options?: Options
+        options?: Options,
     ): ChainableSupplier<UnifiedSteemTransaction, any> {
         ow(account, ow.string.minLength(3).label("account"));
 
-        const options_: Options = options || Options.DEFAULT_OPTIONS;
-        Options.validate(options_);
+        const optionsOrDefaults: Options = options || Options.DEFAULT_OPTIONS;
+        Options.validate(optionsOrDefaults);
 
         return new AccountHistorySupplierImpl(steemAdapter, {
-            account: account,
-            batchSize: options_.batchSize,
-            batchOverlap: options_.batchOverlap,
+            account,
+            batchSize: optionsOrDefaults.batchSize,
+            batchOverlap: optionsOrDefaults.batchOverlap,
         });
     }
 

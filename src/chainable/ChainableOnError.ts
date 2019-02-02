@@ -1,5 +1,4 @@
-
-import { ChainableFilter } from "./Chainable";
+import { ChainableFilter } from "./ChainableFilter";
 
 export class ChainableOnError<T> extends ChainableFilter<T, ChainableOnError<T>> {
     private onErrorCallback: (error: Error) => void;
@@ -14,7 +13,9 @@ export class ChainableOnError<T> extends ChainableFilter<T, ChainableOnError<T>>
     }
 
     protected take(error: Error | undefined, item: T): boolean {
-        if (error) this.onErrorCallback(error);
+        if (error) {
+            this.onErrorCallback(error);
+        }
         return this.give(error, item);
     }
 }

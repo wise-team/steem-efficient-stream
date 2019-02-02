@@ -1,6 +1,10 @@
 import { AbstractUniverseLog } from "universe-log";
 
 export class Log extends AbstractUniverseLog {
+
+    public static log(): Log {
+        return Log.INSTANCE;
+    }
     private static INSTANCE: Log = new Log();
 
     private constructor() {
@@ -11,15 +15,11 @@ export class Log extends AbstractUniverseLog {
         super.init([
             process.env.WISE_SQL_LOG_LEVEL,
             process.env.WISE_LOG_LEVEL,
-            "info"
+            "info",
         ]);
     }
 
     public init() {
         throw new Error("Instead of #init() please call #initialize(debug, verbose) which indirectly overrides init");
-    }
-
-    public static log(): Log {
-        return Log.INSTANCE;
     }
 }

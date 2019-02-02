@@ -10,11 +10,13 @@
   "scripts": {
     "check": "if echo \"$(node --version)\" | grep -q \"$(cat .nvmrc)\"; then echo \"Node version correct\"; else echo \"Node version does not match that in .nvmrc\" && exit 1; fi",
     "build:cleanbefore": "rm -rf dist",
+    "build:lint": "tslint -c tslint.json -p tsconfig.lint.json",
     "build:node": "tsc",
-    "build": "npm run check && npm run build:cleanbefore && npm run build:node",
+    "build": "npm run check && npm run build:cleanbefore && npm run build:node && npm run build:lint",
     "prepare": "NODE_ENV=production npm run build",
     "test": "find src -name '*.spec.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
-    "verify": "find src -name '*.integration.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register"
+    "verify": "find src -name '*.integration.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
+    "lint-fix": "tslint --fix -c tslint.json -p tsconfig.lint.json"
   },
   "dependencies": {
     "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
@@ -39,7 +41,7 @@
     "mocha": "^5.2.0",
     "sinon": "^7.2.3",
     "ts-node": "^8.0.2",
-    "tslint": "^5.11.0",
+    "tslint": "^5.12.1",
     "typescript": "^2.9.2",
     "uuid": "^3.3.2"
   },

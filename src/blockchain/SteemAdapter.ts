@@ -8,7 +8,7 @@ export interface SteemAdapter {
 
 export namespace SteemAdapter {
     export function isSteemAdapter(o: any): o is SteemAdapter {
-        return (<SteemAdapter>o).getAccountHistoryAsync !== undefined;
+        return (o as SteemAdapter).getAccountHistoryAsync !== undefined;
     }
 
     export interface Options {

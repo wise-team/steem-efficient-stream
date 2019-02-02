@@ -1,10 +1,10 @@
 import ow from "ow";
 import * as steem from "steem";
 
-import { SteemAdapter } from "../blockchain/SteemAdapter";
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
-import { Log } from "../Log";
+import { SteemAdapter } from "../blockchain/SteemAdapter";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { Log } from "../Log";
 
 export class NonJoinedBatchFetch {
     private batchSize: number;
@@ -21,13 +21,15 @@ export class NonJoinedBatchFetch {
 
         ow(
             props.batchSize,
-            ow.number.integer.inRange(0, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE).label("batchSize")
+            ow.number.integer.inRange(0, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE).label("batchSize"),
         );
         this.batchSize = props.batchSize;
     }
 
     public async getNextBatch(): Promise<UnifiedSteemTransaction[] | undefined> {
-        if (this.nextFrom === 0) return undefined;
+        if (this.nextFrom === 0) {
+            return undefined;
+        }
 
         const batchRaw = await this.loadFrom(this.nextFrom);
         this.nextFrom = this.calculateNextFrom(batchRaw);
@@ -38,12 +40,13 @@ export class NonJoinedBatchFetch {
     }
 
     private async loadFrom(from: number): Promise<steem.AccountHistory.Operation[]> {
-        // Sometimes at the end of account history "from" can be lower than 1000. In that case we should set limit to "from". It will simply load operations including the oldest one.
+        // Sometimes at the end of account history "from" can be lower than 1000. In that case we should set
+        // limit to "from". It will simply load operations including the oldest one.
         const batchLimit = from === -1 ? this.batchSize : Math.min(this.batchSize, from);
 
         Log.log().debug(
             "STEEMJSACCOUNTHISTORYSUPPLIER_GET_ACCOUNT_HISTORY_ASYNC=" +
-                JSON.stringify({ account: this.account, from: from, batchLimit: batchLimit })
+                JSON.stringify({ account: this.account, from, batchLimit }),
         );
 
         return await this.loadBatchFromNewestToOldest(from, batchLimit);
@@ -51,7 +54,7 @@ export class NonJoinedBatchFetch {
 
     private async loadBatchFromNewestToOldest(
         from: number,
-        batchLimit: number
+        batchLimit: number,
     ): Promise<steem.AccountHistory.Operation[]> {
         const batchFromOldestToNewest = await this.loadBatchFromServer(from, batchLimit);
         return batchFromOldestToNewest.reverse();
@@ -63,7 +66,9 @@ export class NonJoinedBatchFetch {
 
     private calculateNextFrom(batch: steem.AccountHistory.Operation[]): number {
         const accountHistoryDoesNotHaveMoreOperations = batch.length < this.batchSize;
-        if (accountHistoryDoesNotHaveMoreOperations) return 0;
+        if (accountHistoryDoesNotHaveMoreOperations) {
+            return 0;
+        }
 
         const oldestOp = batch[batch.length - 1];
         const oldestOpIndex = this.getIndexOfOp(oldestOp);
@@ -81,7 +86,8 @@ export class NonJoinedBatchFetch {
             block_num: opDescriptor.block,
             transaction_num: opDescriptor.trx_in_block,
             transaction_id: opDescriptor.trx_id,
-            timestamp: new Date(opDescriptor.timestamp + "Z"), // this is UTC time (Z marks it so that it can be converted to local time properly)
+            // the following is UTC time (Z marks it so that it can be converted to local time properly)
+            timestamp: new Date(opDescriptor.timestamp + "Z"),
             ops: [opDescriptor.op],
         };
     }

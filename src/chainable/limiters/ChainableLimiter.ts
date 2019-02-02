@@ -1,5 +1,4 @@
-
-import { ChainableFilter } from "../Chainable";
+import { ChainableFilter } from "../ChainableFilter";
 
 export class ChainableLimiter<T> extends ChainableFilter<T, ChainableLimiter<T>> {
     private limit: number;
@@ -15,11 +14,12 @@ export class ChainableLimiter<T> extends ChainableFilter<T, ChainableLimiter<T>>
     }
 
     protected take(error: Error | undefined, item: T): boolean {
-            const result: boolean = this.give(error, item);
-            this.counter++;
-            if (this.counter >= this.limit) {
-                return false;
-            }
-            else return result;
+        const result: boolean = this.give(error, item);
+        this.counter++;
+        if (this.counter >= this.limit) {
+            return false;
+        } else {
+            return result;
+        }
     }
 }

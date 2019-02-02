@@ -1,12 +1,13 @@
 import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as _ from "lodash";
 import "mocha";
 import * as sinon from "sinon";
 import * as steem from "steem";
-import * as _ from "lodash";
+
+import { Log } from "../Log";
 
 import { prepare, takeTransactionsFromSupplier } from "./AccountHistorySupplier.mocks.test";
-import { Log } from "../Log";
 Log.log().initialize();
 
 chaiUse(chaiAsPromised);
@@ -27,7 +28,7 @@ describe("AccountHistorySupplier", function() {
         const batchSize = Math.floor(Math.random() * 1000);
         const { account, supplier, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: _.random(0, batchSize - 1),
-            batchSize: batchSize,
+            batchSize,
         });
 
         const takenTransactions = await takeTransactionsFromSupplier(supplier);
@@ -41,7 +42,7 @@ describe("AccountHistorySupplier", function() {
         const numBatches = _.random(5, 10);
         const { account, supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: batchSize * numBatches,
-            batchSize: batchSize,
+            batchSize,
         });
 
         const takenTransactions = await takeTransactionsFromSupplier(supplier);
@@ -103,8 +104,8 @@ describe("AccountHistorySupplier", function() {
                     expect(trxMoment).to.be.lessThan(prevTrxMoment);
                     prevTrxMoment = trxMoment;
                 }
-            }
-        )
+            },
+        ),
     );
 
     it("stops supplying after takeFn returns false", async () => {
@@ -183,7 +184,7 @@ describe("AccountHistorySupplier", function() {
                     index,
                     {
                         block: blockNum,
-                        op: op,
+                        op,
                         op_in_trx: opNum,
                         timestamp: new Date(Date.now() - 10000 + trxNum).toISOString(),
                         trx_id: "trx_" + trxNum,

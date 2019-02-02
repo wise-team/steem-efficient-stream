@@ -1,6 +1,6 @@
-import "mocha";
-import * as _ from "lodash";
 import { expect } from "chai";
+import * as _ from "lodash";
+import "mocha";
 
 // wise imports
 import { SteemOperationNumber } from "./SteemOperationNumber";

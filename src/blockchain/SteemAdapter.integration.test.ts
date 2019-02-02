@@ -1,21 +1,21 @@
 import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as _ from "lodash";
 import "mocha";
 import * as sinon from "sinon";
-import * as _ from "lodash";
-import * as uuid from "uuid/v4";
 import * as steem from "steem";
+import * as uuid from "uuid/v4";
 
+import { testsConfig } from "../_test/tests-config.test";
+
+import { BlockchainConfig } from "./BlockchainConfig";
 import { SteemAdapter } from "./SteemAdapter";
 import { SteemAdapterImpl } from "./SteemAdapterImpl";
-import { BlockchainConfig } from "./BlockchainConfig";
-import { testsConfig } from "../_test/tests-config.test";
 
 chaiUse(chaiAsPromised);
 
-
 const adapterConfig: SteemAdapter.Options = {
-    url: testsConfig.defaultSteemApi
+    url: testsConfig.defaultSteemApi,
 };
 
 describe.only("SteemAdapter", function() {
@@ -50,9 +50,9 @@ describe.only("SteemAdapter", function() {
         it("when from=-1 returns newest operations", async () => {
             const { steemAdapter } = prepare();
 
-            const from = -1,
-                limit = 50,
-                username = "noisy";
+            const from = -1;
+            const limit = 50;
+            const username = "noisy";
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
 
             const minimalDateTimestamp = Date.now() - 1000 * 3600 * 24 * 60; // 60 days
@@ -61,8 +61,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from=-1 returns operations sorted by moment ascending", async () => {
             const { steemAdapter, username } = prepare();
-            const from = -1,
-                limit = 1000;
+            const from = -1;
+            const limit = 1000;
 
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
             const timestamps = ops.map(op => getOperationMoment(op).timestamp);
@@ -76,8 +76,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from > 0 returns operations sorted by moment ascending", async () => {
             const { steemAdapter, username } = prepare();
-            const from = Math.floor(10000 + Math.random() * 10000),
-                limit = 1000;
+            const from = Math.floor(10000 + Math.random() * 10000);
+            const limit = 1000;
 
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
             const timestamps = ops.map(op => getOperationMoment(op).timestamp);
@@ -91,8 +91,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from > 0 returns operations with indexes lower (or equal) than from", async () => {
             const { steemAdapter, username } = prepare();
-            const from = Math.floor(10000 + Math.random() * 10000),
-                limit = 1000;
+            const from = Math.floor(10000 + Math.random() * 10000);
+            const limit = 1000;
 
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
             const indexes = ops.map(op => getAccountHistoryIndexOfOperation(op));
@@ -107,8 +107,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from > 0 the last returned operartion has index equal to from", async () => {
             const { steemAdapter, username } = prepare();
-            const from = Math.floor(5000 + Math.random() * 6000),
-                limit = 1000;
+            const from = Math.floor(5000 + Math.random() * 6000);
+            const limit = 1000;
 
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
             const indexes = ops.map(op => getAccountHistoryIndexOfOperation(op));
@@ -121,8 +121,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from > 0 returns ($limit+1) operations", async () => {
             const { steemAdapter, username } = prepare();
-            const from = Math.floor(10000 + Math.random() * 10000),
-                limit = 1000;
+            const from = Math.floor(10000 + Math.random() * 10000);
+            const limit = 1000;
 
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
             const indexes = ops.map(op => getAccountHistoryIndexOfOperation(op));
@@ -134,8 +134,8 @@ describe.only("SteemAdapter", function() {
 
         it("when from > 0 but lower than $limit, throws 'start must be greater than limit'", async () => {
             const { steemAdapter, username } = prepare();
-            const from = Math.floor(Math.random() * 600),
-                limit = 1000;
+            const from = Math.floor(Math.random() * 600);
+            const limit = 1000;
 
             try {
                 const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
@@ -151,7 +151,7 @@ describe.only("SteemAdapter", function() {
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(
                 "noisy",
                 50 * 1000,
-                BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE
+                BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE,
             );
             const descriptors = ops.map(op => getOperationWithDescriptor(op)[0]);
 
@@ -164,14 +164,14 @@ describe.only("SteemAdapter", function() {
             const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, -1, 500);
             const opsWithDescriptors = ops.map(op => getOperationWithDescriptor(op));
             opsWithDescriptors.forEach(opd => {
-                if (opd[0] == "custom_json") {
+                if (opd[0] === "custom_json") {
                     expect(opd[1])
                         .to.haveOwnProperty("required_posting_auths")
                         .that.is.an("array")
                         .that.include(username);
-                } else if (opd[0] == "vote") {
+                } else if (opd[0] === "vote") {
                     const voteOp = opd[1] as steem.VoteOperation;
-                    expect(voteOp.voter === username || voteOp.author === username).to.be.true;
+                    expect(voteOp.voter === username || voteOp.author === username).to.be.equal(true);
                 }
             });
         });

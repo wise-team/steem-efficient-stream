@@ -1,7 +1,9 @@
-import * as steem from "steem";
 import * as _ from "lodash";
 import ow from "ow";
+import * as steem from "steem";
+
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+
 import { NonJoinedBatchFetch } from "./NonJoinedBatchFetch";
 
 export class OverlapTrxJoiningBatchBuffer {
@@ -17,8 +19,11 @@ export class OverlapTrxJoiningBatchBuffer {
 
     public async nextBatch(): Promise<UnifiedSteemTransaction[] | undefined> {
         const takenBatch = await this.batchFetch.getNextBatch();
-        if (!takenBatch) return this.returnLastOverlap();
-        else return this.returnStrippedBatch(takenBatch);
+        if (!takenBatch) {
+            return this.returnLastOverlap();
+        } else {
+            return this.returnStrippedBatch(takenBatch);
+        }
     }
 
     private async returnLastOverlap() {
@@ -62,8 +67,8 @@ export class OverlapTrxJoiningBatchBuffer {
         };
     }
 
-    private stripOverlap<T extends any>(batch_: T[]): { passItems: T[]; overlapItems: T[] } {
-        const batchClone = batch_.slice();
+    private stripOverlap<T extends any>(batch: T[]): { passItems: T[]; overlapItems: T[] } {
+        const batchClone = batch.slice();
         const passLength = batchClone.length - this.overlapDepth;
         const passItems = batchClone.splice(0, passLength);
         const overlapItems = batchClone;

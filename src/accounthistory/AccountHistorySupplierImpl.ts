@@ -1,11 +1,12 @@
 import * as _ from "lodash";
 import ow from "ow";
 
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
-import { OverlapTrxJoiningBatchBuffer } from "./OverlapTrxJoiningBatchBuffer";
+import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { ChainableSupplier } from "../chainable/ChainableSupplier";
+
 import { NonJoinedBatchFetch } from "./NonJoinedBatchFetch";
-import { ChainableSupplier } from "../chainable/Chainable";
+import { OverlapTrxJoiningBatchBuffer } from "./OverlapTrxJoiningBatchBuffer";
 
 export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTransaction, AccountHistorySupplierImpl> {
     private batchBuffer: OverlapTrxJoiningBatchBuffer;
@@ -28,7 +29,7 @@ export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTr
             ow.number.integer
                 .greaterThan(0)
                 .lessThan(batchSize - 1)
-                .finite.label("batchOverlap")
+                .finite.label("batchOverlap"),
         );
 
         const batchFetch = new NonJoinedBatchFetch({ steemAdapter, account, batchSize });
@@ -43,6 +44,10 @@ export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTr
         }
     }
 
+    protected me(): AccountHistorySupplierImpl {
+        return this;
+    }
+
     private async giveNextTransactionToTaker(): Promise<{ takerWantsMore: boolean }> {
         try {
             const trx = await this.nextTransaction();
@@ -50,7 +55,9 @@ export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTr
             return { takerWantsMore };
         } catch (error) {
             const takerWantsMore = this.give(error, undefined);
-            if (!takerWantsMore) throw error;
+            if (!takerWantsMore) {
+                throw error;
+            }
             return { takerWantsMore };
         }
     }
@@ -58,7 +65,9 @@ export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTr
     private async nextTransaction(): Promise<UnifiedSteemTransaction | undefined> {
         this.loadNextBatchIfRequired();
 
-        if (!this.currentBatch) return undefined;
+        if (!this.currentBatch) {
+            return undefined;
+        }
         return this.currentBatch.shift();
     }
 
@@ -66,9 +75,5 @@ export class AccountHistorySupplierImpl extends ChainableSupplier<UnifiedSteemTr
         if (this.currentBatch && this.currentBatch.length === 0) {
             this.currentBatch = await this.batchBuffer.nextBatch();
         }
-    }
-
-    protected me(): AccountHistorySupplierImpl {
-        return this;
     }
 }

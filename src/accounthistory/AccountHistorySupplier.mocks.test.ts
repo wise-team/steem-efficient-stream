@@ -1,13 +1,14 @@
-import * as steem from "steem";
 import * as _ from "lodash";
-import * as uuid from "uuid/v4";
 import * as sinon from "sinon";
+import * as steem from "steem";
+import * as uuid from "uuid/v4";
 
-import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
 import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
-import { SimpleTaker } from "../chainable/Chainable";
+import { SimpleTaker } from "../chainable/SimpleTaker";
+
+import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
 
 export type FakeAccountHistoryOpsGenerator = (account: string, length: number) => steem.AccountHistory.Operation[];
 
@@ -26,7 +27,7 @@ export function generateFakeAccountHistoryOps(account: string, length: number): 
             index,
             {
                 block: Math.floor(index / 2),
-                op: op,
+                op,
                 op_in_trx: 0,
                 timestamp: new Date(Date.now() - 10000 + index).toISOString(),
                 trx_id: uuid() + "_trx_" + index,
@@ -43,9 +44,11 @@ export function getAccountHistoryAsyncMock(fakeAccountHistoryOps: steem.AccountH
     const mockedFn: (
         account: string,
         from: number,
-        limit: number
+        limit: number,
     ) => Promise<steem.AccountHistory.Operation[]> = async (account: string, from: number, limit: number) => {
-        if (from < 0) from = fakeAccountHistoryOps.length - 1;
+        if (from < 0) {
+            from = fakeAccountHistoryOps.length - 1;
+        }
         const sliceStart = Math.max(from - limit, 0);
         const sliceEndExcluding = sliceStart + limit + 1;
         const result = fakeAccountHistoryOps.slice(sliceStart, sliceEndExcluding);
@@ -80,7 +83,7 @@ export function prepare(params: {
 
 export async function takeTransactionsFromSupplier(
     supplier: AccountHistorySupplierImpl,
-    takeCount: number = -1
+    takeCount: number = -1,
 ): Promise<UnifiedSteemTransaction[]> {
     const takenTransactions: UnifiedSteemTransaction[] = [];
     supplier.chain(
@@ -89,7 +92,7 @@ export async function takeTransactionsFromSupplier(
             const takeNext = takeCount > 0 ? takenTransactions.length < takeCount : true;
             const takenTransactionsLength = takenTransactions.length;
             return takeNext;
-        })
+        }),
     );
     await supplier.start();
     return takenTransactions;
