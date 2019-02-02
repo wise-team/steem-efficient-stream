@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import ow from "ow";
 
 import { SteemAdapter } from "../blockchain/SteemAdapter";

@@ -1,81 +1,28 @@
-import * as _ from "lodash";
-import * as sinon from "sinon";
-import * as steem from "steem";
-import * as uuid from "uuid/v4";
-
-import { SteemAdapter } from "../blockchain/SteemAdapter";
-import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
 import { SimpleTaker } from "../chainable/SimpleTaker";
 
+import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
 import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
-
-export type FakeAccountHistoryOpsGenerator = (account: string, length: number) => steem.AccountHistory.Operation[];
-
-export function generateFakeAccountHistoryOps(account: string, length: number): steem.AccountHistory.Operation[] {
-    const ops = _.range(0, length).map(index => {
-        const op: steem.VoteOperationWithDescriptor = [
-            "vote",
-            {
-                voter: account,
-                author: "author-" + index,
-                permlink: "permlink-" + index,
-                weight: -10000 + 20000 * Math.random(),
-            },
-        ];
-        const accHistop: steem.AccountHistory.Operation = [
-            index,
-            {
-                block: Math.floor(index / 2),
-                op,
-                op_in_trx: 0,
-                timestamp: new Date(Date.now() - 10000 + index).toISOString(),
-                trx_id: uuid() + "_trx_" + index,
-                trx_in_block: index % 2,
-                virtual_op: 0,
-            },
-        ];
-        return accHistop;
-    });
-    return ops;
-}
-
-export function getAccountHistoryAsyncMock(fakeAccountHistoryOps: steem.AccountHistory.Operation[]) {
-    const mockedFn: (
-        account: string,
-        from: number,
-        limit: number,
-    ) => Promise<steem.AccountHistory.Operation[]> = async (account: string, from: number, limit: number) => {
-        if (from < 0) {
-            from = fakeAccountHistoryOps.length - 1;
-        }
-        const sliceStart = Math.max(from - limit, 0);
-        const sliceEndExcluding = sliceStart + limit + 1;
-        const result = fakeAccountHistoryOps.slice(sliceStart, sliceEndExcluding);
-        return result;
-    };
-    return mockedFn;
-}
 
 export function prepare(params: {
     accountHistoryLength: number;
     batchSize: number;
-    customOpsGenerator?: FakeAccountHistoryOpsGenerator;
+    batchOverlap: number;
+    customOpsGenerator?: AccountHistoryOpsMock.OpsGenerator;
 }) {
-    const account = _.sample(["noisy", "jblew", "fervi"]) || "-sample-returned-undefined-";
-    const adapter: SteemAdapter = SteemAdapterFactory.mock();
-
-    const batchOverlap = 5;
-
-    const opsGenerator: FakeAccountHistoryOpsGenerator = params.customOpsGenerator || generateFakeAccountHistoryOps;
-    const fakeAccountHistoryOps = opsGenerator(account, params.accountHistoryLength);
-
-    const getAccountHistoryAsyncSpy = sinon.spy(getAccountHistoryAsyncMock(fakeAccountHistoryOps));
-    adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
+    const {
+        adapter,
+        account,
+        fakeAccountHistoryOps,
+        getAccountHistoryAsyncSpy,
+    } = AccountHistoryOpsMock.mockSteemAdapterAccountHistory({
+        accountHistoryLength: params.accountHistoryLength,
+        customOpsGenerator: params.customOpsGenerator,
+    });
     const supplier = new AccountHistorySupplierImpl(adapter, {
         account,
         batchSize: params.batchSize,
-        batchOverlap,
+        batchOverlap: params.batchOverlap,
     });
 
     return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, supplier, params };
@@ -90,7 +37,6 @@ export async function takeTransactionsFromSupplier(
         new SimpleTaker<UnifiedSteemTransaction>(trx => {
             takenTransactions.push(trx);
             const takeNext = takeCount > 0 ? takenTransactions.length < takeCount : true;
-            const takenTransactionsLength = takenTransactions.length;
             return takeNext;
         }),
     );

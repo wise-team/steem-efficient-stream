@@ -3,7 +3,6 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
 import * as sinon from "sinon";
-import * as steem from "steem";
 
 import { Log } from "../Log";
 
@@ -16,10 +15,11 @@ describe("AccountHistorySupplier", function() {
     it("queries only once if batch returns lower number of operations than limit", async () => {
         const { supplier, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: _.random(0, 999),
+            batchOverlap: 5,
             batchSize: 1000,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        await takeTransactionsFromSupplier(supplier);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
     });
@@ -29,9 +29,10 @@ describe("AccountHistorySupplier", function() {
         const { account, supplier, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: _.random(0, batchSize - 1),
             batchSize,
+            batchOverlap: 5,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        await takeTransactionsFromSupplier(supplier);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
         expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, batchSize]);
@@ -40,12 +41,13 @@ describe("AccountHistorySupplier", function() {
     it("query batches does not overlap", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
         const numBatches = _.random(5, 10);
-        const { account, supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: batchSize * numBatches,
+            batchOverlap: 5,
             batchSize,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        await takeTransactionsFromSupplier(supplier);
 
         let sum = 0;
         for (const call of getAccountHistoryAsyncSpy.getCalls()) {
@@ -55,9 +57,10 @@ describe("AccountHistorySupplier", function() {
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(numBatches);
     });
 
-    it.only("supplies all transactions returned by a single batch", async () => {
+    it("supplies all transactions returned by a single batch", async () => {
         const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: _.random(0, 99),
+            batchOverlap: 5,
             batchSize: 100,
         });
 
@@ -73,6 +76,7 @@ describe("AccountHistorySupplier", function() {
     it("supplies all transactions returned by a multiple batches", async () => {
         const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: _.random(500, 1000),
+            batchOverlap: 5,
             batchSize: 100,
         });
 
@@ -91,6 +95,7 @@ describe("AccountHistorySupplier", function() {
             async () => {
                 const { supplier, getAccountHistoryAsyncSpy } = prepare({
                     accountHistoryLength: 1000 * test.batches - 1,
+                    batchOverlap: 5,
                     batchSize: 1000,
                 });
 
@@ -111,6 +116,7 @@ describe("AccountHistorySupplier", function() {
     it("stops supplying after takeFn returns false", async () => {
         const { supplier } = prepare({
             accountHistoryLength: 50,
+            batchOverlap: 5,
             batchSize: 10,
         });
 
@@ -121,19 +127,20 @@ describe("AccountHistorySupplier", function() {
     });
 
     it("stops querying after takeFn returns false", async () => {
-        const { supplier, getAccountHistoryAsyncSpy, params, fakeAccountHistoryOps } = prepare({
+        const { supplier, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: 50,
+            batchOverlap: 5,
             batchSize: 10,
         });
 
         const takeCount = 15;
-        const takenTransactions = await takeTransactionsFromSupplier(supplier, takeCount);
+        await takeTransactionsFromSupplier(supplier, takeCount);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(2);
     });
 
     it("stops querying after error is caught", async () => {
-        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchSize: 10 });
+        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
 
         const getAccountHistoryAsyncSpy = sinon.fake.rejects(new Error("Test error"));
         adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
@@ -148,7 +155,7 @@ describe("AccountHistorySupplier", function() {
     });
 
     it("rejects after error is caught", async () => {
-        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchSize: 10 });
+        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
 
         const getAccountHistoryAsyncSpy = sinon.fake.rejects(new Error("Test error"));
         adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
@@ -165,7 +172,8 @@ describe("AccountHistorySupplier", function() {
     });
 
     it("joins operations that are split to the separate batches", async () => {
-        function doubleOpsGenerator(account: string, length: number): steem.AccountHistory.Operation[] {
+        throw new Error("Specify");
+        /*function doubleOpsGenerator(account: string, length: number): steem.AccountHistory.Operation[] {
             const ops = _.range(0, length).map(index => {
                 const blockNum = Math.floor(index / 6);
                 const trxNum = Math.floor((index - blockNum * 6) / 2);
@@ -199,9 +207,10 @@ describe("AccountHistorySupplier", function() {
 
         const { supplier, adapter, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: 50,
+            batchOverlap: 5,
             batchSize: 10,
             customOpsGenerator: doubleOpsGenerator,
-        });
+        });*/
     });
 
     it("operations in transaction have correct order", async () => {

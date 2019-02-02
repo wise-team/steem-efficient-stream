@@ -2,7 +2,6 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
-import * as sinon from "sinon";
 import * as steem from "steem";
 import * as uuid from "uuid/v4";
 
@@ -138,7 +137,7 @@ describe.only("SteemAdapter", function() {
             const limit = 1000;
 
             try {
-                const ops: AccHistOp[] = await steemAdapter.getAccountHistoryAsync(username, from, limit);
+                await steemAdapter.getAccountHistoryAsync(username, from, limit);
                 throw new Error("Should throw");
             } catch (error) {
                 expect(error.message).to.contain("start must be greater than limit");

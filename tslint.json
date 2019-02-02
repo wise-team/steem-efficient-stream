@@ -24,7 +24,8 @@
             {
                 "grouped-imports": "true"
             }
-        ]
+        ],
+        "no-unused-variable": true
     },
     "rulesDirectory": []
 }

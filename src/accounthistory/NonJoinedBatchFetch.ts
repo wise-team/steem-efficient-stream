@@ -61,7 +61,8 @@ export class NonJoinedBatchFetch {
     }
 
     private async loadBatchFromServer(from: number, batchLimit: number): Promise<steem.AccountHistory.Operation[]> {
-        return await this.steemAdapter.getAccountHistoryAsync(this.account, from, batchLimit);
+        const realBatchLimit = batchLimit - 1; // steem account history limit is INCLUSIVE
+        return await this.steemAdapter.getAccountHistoryAsync(this.account, from, realBatchLimit);
     }
 
     private calculateNextFrom(batch: steem.AccountHistory.Operation[]): number {
