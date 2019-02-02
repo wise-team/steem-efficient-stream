@@ -25,7 +25,7 @@ describe("AccountHistorySupplier", function() {
 
     it("queries with correct batchSize", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
-        const { username, supplier, getAccountHistoryAsyncSpy } = prepare({
+        const { account, supplier, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: _.random(0, batchSize - 1),
             batchSize: batchSize,
         });
@@ -33,13 +33,13 @@ describe("AccountHistorySupplier", function() {
         const takenTransactions = await takeTransactionsFromSupplier(supplier);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
-        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([username, -1, batchSize]);
+        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, batchSize]);
     });
 
     it("query batches does not overlap", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
         const numBatches = _.random(5, 10);
-        const { username, supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { account, supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: batchSize * numBatches,
             batchSize: batchSize,
         });
@@ -164,7 +164,7 @@ describe("AccountHistorySupplier", function() {
     });
 
     it("joins operations that are split to the separate batches", async () => {
-        function doubleOpsGenerator(username: string, length: number): steem.AccountHistory.Operation[] {
+        function doubleOpsGenerator(account: string, length: number): steem.AccountHistory.Operation[] {
             const ops = _.range(0, length).map(index => {
                 const blockNum = Math.floor(index / 6);
                 const trxNum = Math.floor((index - blockNum * 6) / 2);
@@ -173,7 +173,7 @@ describe("AccountHistorySupplier", function() {
                 const op: steem.VoteOperationWithDescriptor = [
                     "vote",
                     {
-                        voter: username,
+                        voter: account,
                         author: "author-" + index,
                         permlink: "permlink-" + index,
                         weight: -10000 + 20000 * Math.random(),

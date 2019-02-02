@@ -9,14 +9,14 @@ import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
 import { SimpleTaker } from "../chainable/Chainable";
 
-export type FakeAccountHistoryOpsGenerator = (username: string, length: number) => steem.AccountHistory.Operation[];
+export type FakeAccountHistoryOpsGenerator = (account: string, length: number) => steem.AccountHistory.Operation[];
 
-export function generateFakeAccountHistoryOps(username: string, length: number): steem.AccountHistory.Operation[] {
+export function generateFakeAccountHistoryOps(account: string, length: number): steem.AccountHistory.Operation[] {
     const ops = _.range(0, length).map(index => {
         const op: steem.VoteOperationWithDescriptor = [
             "vote",
             {
-                voter: username,
+                voter: account,
                 author: "author-" + index,
                 permlink: "permlink-" + index,
                 weight: -10000 + 20000 * Math.random(),
@@ -41,15 +41,14 @@ export function generateFakeAccountHistoryOps(username: string, length: number):
 
 export function getAccountHistoryAsyncMock(fakeAccountHistoryOps: steem.AccountHistory.Operation[]) {
     const mockedFn: (
-        username: string,
+        account: string,
         from: number,
         limit: number
-    ) => Promise<steem.AccountHistory.Operation[]> = async (username: string, from: number, limit: number) => {
+    ) => Promise<steem.AccountHistory.Operation[]> = async (account: string, from: number, limit: number) => {
         if (from < 0) from = fakeAccountHistoryOps.length - 1;
         const sliceStart = Math.max(from - limit, 0);
         const sliceEndExcluding = sliceStart + limit + 1;
         const result = fakeAccountHistoryOps.slice(sliceStart, sliceEndExcluding);
-        // console.log({ sliceStart, sliceEndExcluding, result, fakeAccountHistoryOps });
         return result;
     };
     return mockedFn;
@@ -60,23 +59,23 @@ export function prepare(params: {
     batchSize: number;
     customOpsGenerator?: FakeAccountHistoryOpsGenerator;
 }) {
-    const username = _.sample(["noisy", "jblew", "fervi"]) || "-sample-returned-undefined-";
+    const account = _.sample(["noisy", "jblew", "fervi"]) || "-sample-returned-undefined-";
     const adapter: SteemAdapter = SteemAdapterFactory.mock();
 
     const batchOverlap = 5;
 
     const opsGenerator: FakeAccountHistoryOpsGenerator = params.customOpsGenerator || generateFakeAccountHistoryOps;
-    const fakeAccountHistoryOps = opsGenerator(username, params.accountHistoryLength);
+    const fakeAccountHistoryOps = opsGenerator(account, params.accountHistoryLength);
 
     const getAccountHistoryAsyncSpy = sinon.spy(getAccountHistoryAsyncMock(fakeAccountHistoryOps));
     adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
     const supplier = new AccountHistorySupplierImpl(adapter, {
-        username,
+        account,
         batchSize: params.batchSize,
         batchOverlap,
     });
 
-    return { username, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, supplier, params };
+    return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, supplier, params };
 }
 
 export async function takeTransactionsFromSupplier(
@@ -89,7 +88,6 @@ export async function takeTransactionsFromSupplier(
             takenTransactions.push(trx);
             const takeNext = takeCount > 0 ? takenTransactions.length < takeCount : true;
             const takenTransactionsLength = takenTransactions.length;
-            // console.log("take(): ", { takeCount, takenTransactionsLength, takeNext });
             return takeNext;
         })
     );

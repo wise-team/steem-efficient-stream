@@ -5,19 +5,22 @@ import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
 import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
-import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
 
 export namespace AccountHistorySupplierFactory {
-    export function withOptions(username: string, steemAdapter: SteemAdapter, options?: Options): ChainableSupplier<UnifiedSteemTransaction, any> {
-        ow(username, ow.string.minLength(3).label("username"));
-        
+    export function withOptions(
+        account: string,
+        steemAdapter: SteemAdapter,
+        options?: Options
+    ): ChainableSupplier<UnifiedSteemTransaction, any> {
+        ow(account, ow.string.minLength(3).label("account"));
+
         const options_: Options = options || Options.DEFAULT_OPTIONS;
         Options.validate(options_);
 
         return new AccountHistorySupplierImpl(steemAdapter, {
-            username: username,
+            account: account,
             batchSize: options_.batchSize,
-            batchOverlap: options_.batchOverlap
+            batchOverlap: options_.batchOverlap,
         });
     }
 
@@ -40,7 +43,7 @@ export namespace AccountHistorySupplierFactory {
 
         export const DEFAULT_OPTIONS: Options = {
             batchSize: BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE,
-            batchOverlap: 5
+            batchOverlap: 5,
         };
     }
 }

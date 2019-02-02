@@ -1,42 +1,41 @@
 import * as steem from "steem";
 import * as _ from "lodash";
 import ow from "ow";
-import { ChainableTransformer } from "../chainable/Chainable";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { NonJoinedBatchFetch } from "./NonJoinedBatchFetch";
 
-export class BatchOverlapTrxJoiner extends ChainableTransformer<
-    UnifiedSteemTransaction[],
-    UnifiedSteemTransaction,
-    BatchOverlapTrxJoiner
-> {
+export class OverlapTrxJoiningBatchBuffer {
+    private batchFetch: NonJoinedBatchFetch;
     private overlapDepth: number;
     private previousBatchOverlap: UnifiedSteemTransaction[] = [];
 
-    public constructor(overlapDepth: number) {
-        super();
-
+    public constructor(batchFetch: NonJoinedBatchFetch, overlapDepth: number) {
+        this.batchFetch = batchFetch;
         this.overlapDepth = overlapDepth;
         ow(this.overlapDepth, ow.number.integer.greaterThan(0).label("overlapDepth"));
     }
 
-    protected me(): BatchOverlapTrxJoiner {
-        return this;
+    public async nextBatch(): Promise<UnifiedSteemTransaction[] | undefined> {
+        const takenBatch = await this.batchFetch.getNextBatch();
+        if (!takenBatch) return this.returnLastOverlap();
+        else return this.returnStrippedBatch(takenBatch);
     }
 
-    protected take(error: Error | undefined, takenBatchNonJoinedTrxs: UnifiedSteemTransaction[]): boolean {
-        if (error) throw error;
+    private async returnLastOverlap() {
+        if (this.previousBatchOverlap.length > 0) {
+            const toReturn = this.previousBatchOverlap;
+            this.previousBatchOverlap = [];
+            return toReturn;
+        }
+        return undefined;
+    }
 
-        const takenBatchWithPreviousOverlap = [...this.previousBatchOverlap, ...takenBatchNonJoinedTrxs];
+    private async returnStrippedBatch(takenBatch: UnifiedSteemTransaction[]) {
+        const takenBatchWithPreviousOverlap = [...this.previousBatchOverlap, ...takenBatch];
         const takenBatchJoinedTrxs = this.joinTrxs(takenBatchWithPreviousOverlap);
         const { passItems, overlapItems } = this.stripOverlap(takenBatchJoinedTrxs);
         this.previousBatchOverlap = overlapItems;
-        console.log(`BatchOverlapTrxJoiner: passItems=[${passItems.length}], overlapItems=[${overlapItems.length}]`);
-
-        for (const trx of passItems) {
-            const takerWantsMore = this.give(undefined, trx);
-            if (!takerWantsMore) return false;
-        }
-        return true;
+        return passItems;
     }
 
     private joinTrxs(trxs: UnifiedSteemTransaction[]): UnifiedSteemTransaction[] {
@@ -68,15 +67,6 @@ export class BatchOverlapTrxJoiner extends ChainableTransformer<
         const passLength = batchClone.length - this.overlapDepth;
         const passItems = batchClone.splice(0, passLength);
         const overlapItems = batchClone;
-        console.log(
-            JSON.stringify({
-                batchClone: batchClone.length,
-                overlapDepth: this.overlapDepth,
-                passLength,
-                passItems: passItems.length,
-                overlapItems: overlapItems.length,
-            })
-        );
         return { passItems, overlapItems };
     }
 
