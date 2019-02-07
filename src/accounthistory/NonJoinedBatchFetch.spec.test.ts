@@ -55,7 +55,7 @@ describe("NonJoinedBatchFetch", function() {
     it("queries with correct batchSize", async () => {
         const batchSize = _.random(10, 1000);
         const { batchFetch, getAccountHistoryAsyncSpy, account } = prepare({
-            accountHistoryLength: _.random(0, 999),
+            accountHistoryLength: _.random(1, 999),
             batchSize,
         });
 
@@ -66,26 +66,46 @@ describe("NonJoinedBatchFetch", function() {
         expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, realBatchSize]);
     });
 
-    it("query batches does not overlap", async () => {
-        const batchSize = _.random(50, 60);
-        const numBatches = _.random(5, 10);
-        const { account, batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
-            accountHistoryLength: batchSize * (numBatches - 1) + _.random(1, 5),
-            batchSize,
-        });
+    const baseBatchSize = _.random(40, 60);
+    const numOfFullBatches = _.random(5, 10);
+    [
+        {
+            name: "Query batches does not overlap when account history length is multiplication of batch size",
+            accountHistoryLength: baseBatchSize * numOfFullBatches, // + 0
+            numOfBatches: numOfFullBatches,
+        },
+        {
+            name: "Query batches does not overlap when account history length is multiplication of batch size plus 1",
+            accountHistoryLength: baseBatchSize * numOfFullBatches + 1,
+            numOfBatches: numOfFullBatches + 1,
+        },
+        {
+            name: "Query batches does not overlap when account history length is multiplication of batch size minus 1",
+            accountHistoryLength: baseBatchSize * numOfFullBatches - 1,
+            numOfBatches: numOfFullBatches,
+        },
+    ].forEach(test =>
+        it(test.name, async () => {
+            const accountHistoryLength = test.accountHistoryLength;
+            const { batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+                accountHistoryLength,
+                batchSize: baseBatchSize,
+            });
 
-        let finished = false;
-        while (!finished) {
-            finished = !(await batchFetch.getNextBatch());
-        }
+            let finished = false;
+            while (!finished) {
+                finished = !(await batchFetch.getNextBatch());
+            }
 
-        let sum = 0;
-        for (const call of getAccountHistoryAsyncSpy.getCalls()) {
-            sum += (await call.returnValue).length;
-        }
-        expect(sum).to.be.equal(fakeAccountHistoryOps.length);
-        expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(numBatches);
-    });
+            let sum = 0;
+            for (const call of getAccountHistoryAsyncSpy.getCalls()) {
+                sum += (await call.returnValue).length;
+            }
+            expect(fakeAccountHistoryOps.length).to.be.equal(accountHistoryLength);
+            expect(sum, "sum").to.be.equal(fakeAccountHistoryOps.length);
+            expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(test.numOfBatches);
+        }),
+    );
 
     it("does not loop endlessly when accountHistoryLength is a multiplication of batchSize", async () => {
         const batchSize = Math.floor(Math.random() * 1000);

@@ -11,6 +11,7 @@ export class NonJoinedBatchFetch {
     private account: string;
     private steemAdapter: SteemAdapter;
     private nextFrom: number = -1;
+    private hasMore: boolean = true;
 
     public constructor(props: { steemAdapter: SteemAdapter; account: string; batchSize: number }) {
         ow(props.steemAdapter, ow.object.is(o => SteemAdapter.isSteemAdapter(o)).label("steemAdapter"));
@@ -28,12 +29,18 @@ export class NonJoinedBatchFetch {
     }
 
     public async getNextBatch(): Promise<UnifiedSteemTransaction[] | undefined> {
-        if (this.nextFrom === 0) {
+        if (!this.hasMore) {
             return undefined;
         }
 
         const batchRaw = await this.loadFrom(this.nextFrom);
-        this.nextFrom = this.calculateNextFrom(batchRaw);
+
+        const nextWouldBe = this.calculateNextFrom(batchRaw);
+        if (typeof nextWouldBe !== "undefined") {
+            this.nextFrom = nextWouldBe;
+        } else {
+            this.hasMore = false;
+        }
 
         const batch = batchRaw.map(op => this.opToTrx(op));
 
@@ -56,7 +63,6 @@ export class NonJoinedBatchFetch {
             batchLimit,
             exclusiveBatchSize: this.exclusiveBatchSize,
             resultLength: result.length,
-            nextFrom: this.nextFrom,
             range: [this.getIndexOfOp(result[0]), this.getIndexOfOp(result[result.length - 1])],
         });
 
@@ -75,15 +81,16 @@ export class NonJoinedBatchFetch {
         return await this.steemAdapter.getAccountHistoryAsync(this.account, from, batchLimit);
     }
 
-    private calculateNextFrom(batch: steem.AccountHistory.Operation[]): number {
+    private calculateNextFrom(batch: steem.AccountHistory.Operation[]): number | undefined {
         const accountHistoryDoesNotHaveMoreOperations = batch.length < this.exclusiveBatchSize;
         if (accountHistoryDoesNotHaveMoreOperations) {
-            return 0;
+            return undefined;
         }
 
         const oldestOp = batch[batch.length - 1];
         const oldestOpIndex = this.getIndexOfOp(oldestOp);
-        const nextBatchFrom = Math.max(oldestOpIndex - 1, 0);
+        const nextBatchWouldHaveIndex = oldestOpIndex - 1;
+        const nextBatchFrom = nextBatchWouldHaveIndex < 0 ? undefined : nextBatchWouldHaveIndex;
         return nextBatchFrom;
     }
 
