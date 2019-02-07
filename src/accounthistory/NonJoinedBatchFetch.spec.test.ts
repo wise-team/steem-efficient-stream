@@ -110,7 +110,7 @@ describe("NonJoinedBatchFetch", function() {
     it("does not loop endlessly when accountHistoryLength is a multiplication of batchSize", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
         const numBatches = _.random(5, 10);
-        const { account, batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { batchFetch, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: batchSize * numBatches,
             batchSize,
         });

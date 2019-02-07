@@ -22,6 +22,7 @@ export class OperationNumberFilter extends ChainableFilter<UnifiedSteemTransacti
         return this;
     }
 
+    /* tslint:disable:cyclomatic-complexity */
     protected take(error: Error | undefined, rawTx: UnifiedSteemTransaction): boolean {
         if (error) {
             throw error;
