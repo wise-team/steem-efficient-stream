@@ -13,7 +13,7 @@ import { prepare } from "./NonJoinedBatchFetch.mocks.test";
 Log.log().initialize();
 chaiUse(chaiAsPromised);
 
-describe.only("NonJoinedBatchFetch", function() {
+describe("NonJoinedBatchFetch", function() {
     const defaultProps = {
         accountHistoryLength: _.random(100, 1000),
         batchSize: _.random(10, 50),
@@ -51,29 +51,33 @@ describe.only("NonJoinedBatchFetch", function() {
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
     });
-    /*
+
     it("queries with correct batchSize", async () => {
-        const batchSize = Math.floor(Math.random() * 1000);
-        const { account, supplier, getAccountHistoryAsyncSpy } = prepare({
-            accountHistoryLength: _.random(0, batchSize - 1),
+        const batchSize = _.random(10, 1000);
+        const { batchFetch, getAccountHistoryAsyncSpy, account } = prepare({
+            accountHistoryLength: _.random(0, 999),
             batchSize,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        await batchFetch.getNextBatch();
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
-        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, batchSize]);
+        const realBatchSize = batchSize - 1;
+        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, realBatchSize]);
     });
 
     it("query batches does not overlap", async () => {
-        const batchSize = Math.floor(Math.random() * 1000);
+        const batchSize = _.random(50, 60);
         const numBatches = _.random(5, 10);
-        const { account, supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
-            accountHistoryLength: batchSize * numBatches,
+        const { account, batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+            accountHistoryLength: batchSize * (numBatches - 1) + _.random(1, 5),
             batchSize,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        let finished = false;
+        while (!finished) {
+            finished = !(await batchFetch.getNextBatch());
+        }
 
         let sum = 0;
         for (const call of getAccountHistoryAsyncSpy.getCalls()) {
@@ -83,6 +87,23 @@ describe.only("NonJoinedBatchFetch", function() {
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(numBatches);
     });
 
+    it("does not loop endlessly when accountHistoryLength is a multiplication of batchSize", async () => {
+        const batchSize = Math.floor(Math.random() * 1000);
+        const numBatches = _.random(5, 10);
+        const { account, batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+            accountHistoryLength: batchSize * numBatches,
+            batchSize,
+        });
+
+        let finished = false;
+        while (!finished) {
+            finished = !(await batchFetch.getNextBatch());
+        }
+
+        expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(numBatches);
+    });
+
+    /*
     [{ desc: "single batch", batches: 1 }, { desc: "multiple batches", batches: _.random(5, 10) }].forEach(test =>
         it(
             "supplies transactions from " + test.desc + " in a correct order: from the newest to the oldest",
