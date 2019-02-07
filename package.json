@@ -25,7 +25,7 @@
     "lodash": "^4.17.11",
     "ow": "^0.8.0",
     "steem": "^0.7.4",
-    "universe-log": "^0.2.0"
+    "universe-log": "^1.2.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.25",
@@ -43,7 +43,8 @@
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "typescript": "^2.9.2",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "wise-tslint-configuration": "^0.1.0"
   },
   "repository": {
     "type": "git",

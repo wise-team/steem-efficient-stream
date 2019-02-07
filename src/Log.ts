@@ -1,22 +1,22 @@
 import { AbstractUniverseLog } from "universe-log";
 
 export class Log extends AbstractUniverseLog {
-
     public static log(): Log {
         return Log.INSTANCE;
     }
     private static INSTANCE: Log = new Log();
 
     private constructor() {
-        super("steem-efficient-stream");
+        super({
+            levelEnvs: ["STEEM_EFFICIENT_STREAM_LOG_LEVEL", "WISE_LOG_LEVEL"],
+            metadata: {
+                library: "steem-efficient-stream",
+            },
+        });
     }
 
     public initialize() {
-        super.init([
-            process.env.WISE_SQL_LOG_LEVEL,
-            process.env.WISE_LOG_LEVEL,
-            "info",
-        ]);
+        super.init();
     }
 
     public init() {

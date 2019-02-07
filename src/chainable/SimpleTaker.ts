@@ -44,7 +44,7 @@ export class SimpleTaker<T> extends ChainableTaker<T, SimpleTaker<T>> {
             return this.take(error, item as T);
         } catch (error) {
             this.onErrorCallback(error);
-            Log.log().exception(Log.level.error, error);
+            Log.log().doLog(Log.level.error, error);
             return false;
         }
     }
