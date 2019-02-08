@@ -9,21 +9,22 @@ import { Log } from "../Log";
 import { AsyncIterator } from "./AsyncIterator";
 import { AsyncIteratorChainableSupplier } from "./AsyncIteratorChainableSupplier";
 import { mock } from "./AsyncIteratorChainableSupplier.mock.test";
+import { AsyncIteratorMock } from "./AsyncIteratorMock.test";
 
 Log.log().initialize();
 
-describe.only("AsyncIteratorChainableSupplier", function() {
+describe("AsyncIteratorChainableSupplier", function() {
     it("gives all elements", async () => {
-        const iterableValues: mock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
-        const iteratorMock = new mock.AsyncIteratorMock<mock.SampleObject>(_.cloneDeep(iterableValues));
+        const iterableValues: AsyncIteratorMock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
+        const iteratorMock = new AsyncIteratorMock<AsyncIteratorMock.SampleObject>(_.cloneDeep(iterableValues));
         const iteratorSupplier = new AsyncIteratorChainableSupplier(iteratorMock);
         const takenValues = await mock.takeElemsFromSupplier(iteratorSupplier);
         expect(takenValues).to.be.deep.equal(iterableValues);
     });
 
     it("gives error when iterator.next throws", async () => {
-        const iteratorMock: AsyncIterator<mock.SampleObject> = {
-            next(): Promise<IteratorResult<mock.SampleObject>> {
+        const iteratorMock: AsyncIterator<AsyncIteratorMock.SampleObject> = {
+            next(): Promise<IteratorResult<AsyncIteratorMock.SampleObject>> {
                 throw new Error("Sample error");
             },
         };
@@ -32,7 +33,7 @@ describe.only("AsyncIteratorChainableSupplier", function() {
         try {
             await iteratorSupplier
                 .branch(me =>
-                    me.chain(new SimpleTaker<mock.SampleObject>(elem => true)).catch(error => {
+                    me.chain(new SimpleTaker<AsyncIteratorMock.SampleObject>(elem => true)).catch(error => {
                         foundErrors.push(error);
                         return false;
                     }),
@@ -53,15 +54,15 @@ describe.only("AsyncIteratorChainableSupplier", function() {
     });
 
     it("gives error when give throws", async () => {
-        const iterableValues: mock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
-        const iteratorMock = new mock.AsyncIteratorMock<mock.SampleObject>(iterableValues);
+        const iterableValues: AsyncIteratorMock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
+        const iteratorMock = new AsyncIteratorMock<AsyncIteratorMock.SampleObject>(iterableValues);
         const iteratorSupplier = new AsyncIteratorChainableSupplier(iteratorMock);
         const foundErrors: Error[] = [];
         await iteratorSupplier
             .branch(me =>
                 me
                     .chain(
-                        new SimpleTaker<mock.SampleObject>(elem => {
+                        new SimpleTaker<AsyncIteratorMock.SampleObject>(elem => {
                             throw new Error("Sample error");
                         }),
                     )
@@ -80,8 +81,8 @@ describe.only("AsyncIteratorChainableSupplier", function() {
     });
 
     it("stops iterating when taker does not want more", async () => {
-        const iterableValues: mock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
-        const iteratorMock = new mock.AsyncIteratorMock<mock.SampleObject>(iterableValues);
+        const iterableValues: AsyncIteratorMock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
+        const iteratorMock = new AsyncIteratorMock<AsyncIteratorMock.SampleObject>(iterableValues);
         const nextSpy = sinon.spy(iteratorMock, "next");
         const iteratorSupplier = new AsyncIteratorChainableSupplier(iteratorMock);
 
@@ -89,7 +90,7 @@ describe.only("AsyncIteratorChainableSupplier", function() {
             .branch(me =>
                 me
                     .chain(
-                        new SimpleTaker<mock.SampleObject>(elem => {
+                        new SimpleTaker<AsyncIteratorMock.SampleObject>(elem => {
                             return false;
                         }),
                     )
@@ -102,8 +103,8 @@ describe.only("AsyncIteratorChainableSupplier", function() {
     });
 
     it("stops iterating when iterator returns done", async () => {
-        const iterableValues: mock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
-        const iteratorMock = new mock.AsyncIteratorMock<mock.SampleObject>(iterableValues);
+        const iterableValues: AsyncIteratorMock.SampleObject[] = _.range(0, 20).map(i => ({ v: i }));
+        const iteratorMock = new AsyncIteratorMock<AsyncIteratorMock.SampleObject>(iterableValues);
 
         const nextSpy = sinon.spy(iteratorMock.next);
 
