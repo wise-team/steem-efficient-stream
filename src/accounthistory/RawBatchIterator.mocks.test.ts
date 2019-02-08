@@ -1,5 +1,5 @@
 import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
-import { NonJoinedBatchFetch } from "./NonJoinedBatchFetch";
+import { RawBatchIterator } from "./RawBatchIterator";
 
 export function prepare(params: {
     accountHistoryLength: number;
@@ -15,7 +15,7 @@ export function prepare(params: {
         accountHistoryLength: params.accountHistoryLength,
         customOpsGenerator: params.customOpsGenerator,
     });
-    const batchFetch = new NonJoinedBatchFetch({
+    const batchFetch = new RawBatchIterator({
         steemAdapter: adapter,
         account,
         batchSize: params.batchSize,

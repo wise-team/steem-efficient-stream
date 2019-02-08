@@ -4,51 +4,40 @@ import * as steem from "steem";
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { AsyncIterator } from "../iterator/AsyncIterator";
 import { Log } from "../Log";
 
-export class NonJoinedBatchFetch {
+export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]> {
     private exclusiveBatchSize: number;
     private account: string;
     private steemAdapter: SteemAdapter;
     private nextFrom: number = -1;
-    private hasMore: boolean = true;
 
     public constructor(props: { steemAdapter: SteemAdapter; account: string; batchSize: number }) {
-        ow(props.steemAdapter, ow.object.is(o => SteemAdapter.isSteemAdapter(o)).label("steemAdapter"));
+        ow(props.steemAdapter, "steemAdapter", ow.object.is(o => SteemAdapter.isSteemAdapter(o)));
         this.steemAdapter = props.steemAdapter;
 
-        ow(props.account, ow.string.minLength(3).label("account"));
+        ow(props.account, "account", ow.string.minLength(3));
         this.account = props.account;
 
-        ow(
-            props.batchSize,
-            ow.number.integer.inRange(0, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE).label("batchSize"),
-        );
+        ow(props.batchSize, "batchSize", ow.number.integer.inRange(0, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE));
         const inclusiveBatchSize = props.batchSize;
         this.exclusiveBatchSize = this.inclusiveToExclusiveBatchSize(inclusiveBatchSize);
     }
 
-    public async getNextBatch(): Promise<UnifiedSteemTransaction[] | undefined> {
-        if (!this.hasMore) {
-            return undefined;
-        }
-
+    public async next(): Promise<IteratorResult<UnifiedSteemTransaction[]>> {
         const batchRaw = await this.loadFrom(this.nextFrom);
 
         const nextWouldBe = this.calculateNextFrom(batchRaw);
+        let hasMore = false;
         if (typeof nextWouldBe !== "undefined") {
             this.nextFrom = nextWouldBe;
-        } else {
-            this.hasMore = false;
+            hasMore = true;
         }
 
         const batch = batchRaw.map(op => this.opToTrx(op));
 
-        if (batch.length > 0) {
-            return batch;
-        } else {
-            return undefined;
-        }
+        return { done: !hasMore, value: batch };
     }
 
     private async loadFrom(from: number): Promise<steem.AccountHistory.Operation[]> {
