@@ -1,8 +1,9 @@
 import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { ChainableSupplier } from "../chainable/ChainableSupplier";
 import { SimpleTaker } from "../chainable/SimpleTaker";
 
 import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
-import { AccountHistorySupplierImpl } from "./AccountHistorySupplierImpl";
+import { AccountHistorySupplierFactory } from "./AccountHistorySupplierFactory";
 
 export function prepare(params: {
     accountHistoryLength: number;
@@ -19,8 +20,7 @@ export function prepare(params: {
         accountHistoryLength: params.accountHistoryLength,
         customOpsGenerator: params.customOpsGenerator,
     });
-    const supplier = new AccountHistorySupplierImpl(adapter, {
-        account,
+    const supplier = AccountHistorySupplierFactory.withOptions(account, adapter, {
         batchSize: params.batchSize,
         batchOverlap: params.batchOverlap,
     });
@@ -29,7 +29,7 @@ export function prepare(params: {
 }
 
 export async function takeTransactionsFromSupplier(
-    supplier: AccountHistorySupplierImpl,
+    supplier: ChainableSupplier<UnifiedSteemTransaction, any>,
     takeCount: number = -1,
 ): Promise<UnifiedSteemTransaction[]> {
     const takenTransactions: UnifiedSteemTransaction[] = [];
