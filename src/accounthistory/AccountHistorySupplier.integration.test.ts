@@ -31,15 +31,13 @@ export async function takeTransactionsFromSupplier(
     return takenTransactions;
 }
 
-describe.only("AccountHistorySupplier", function() {
+describe("AccountHistorySupplier", function() {
     this.timeout(60000);
     this.retries(1);
 
     it("supplies whole account history from the newest to the oldest op", async () => {
-        const supplier = AccountHistorySupplierFactory.withOptions(
-            "jblew",
-            SteemAdapterFactory.withOptions({ url: testsConfig.defaultSteemApi }),
-        );
+        const steemAdapter = SteemAdapterFactory.withOptions({ url: testsConfig.defaultSteemApi });
+        const supplier = new AccountHistorySupplierFactory(steemAdapter, "jblew").buildChainableSupplier();
 
         const trxs = await takeTransactionsFromSupplier(supplier);
         expect(trxs)

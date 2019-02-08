@@ -20,10 +20,12 @@ export function prepare(params: {
         accountHistoryLength: params.accountHistoryLength,
         customOpsGenerator: params.customOpsGenerator,
     });
-    const supplier = AccountHistorySupplierFactory.withOptions(account, adapter, {
-        batchSize: params.batchSize,
-        batchOverlap: params.batchOverlap,
-    });
+    const supplier = new AccountHistorySupplierFactory(adapter, account)
+        .withOptions({
+            batchSize: params.batchSize,
+            batchOverlap: params.batchOverlap,
+        })
+        .buildChainableSupplier();
 
     return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, supplier, params };
 }
