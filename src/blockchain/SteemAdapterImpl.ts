@@ -20,9 +20,9 @@ export class SteemAdapterImpl implements SteemAdapter {
         from: number,
         limit: number,
     ): Promise<steem.AccountHistory.Operation[]> {
-        ow(username, ow.string.nonEmpty.label("username"));
-        ow(from, ow.number.greaterThanOrEqual(-1).label("from"));
-        ow(limit, ow.number.inRange(1, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE).label("limit"));
+        ow(username, "username", ow.string.nonEmpty);
+        ow(from, "from", ow.number.greaterThanOrEqual(-1));
+        ow(limit, "limit", ow.number.inRange(1, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE));
 
         try {
             return await this.steem.getAccountHistoryAsync(username, from, limit);

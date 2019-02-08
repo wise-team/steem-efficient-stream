@@ -17,7 +17,7 @@ export namespace SteemAdapter {
 
     export namespace Options {
         export function validate(o: Options) {
-            ow(o.url, ow.string.nonEmpty.label("SteemAdapter.Options.url"));
+            ow(o.url, "SteemAdapter.Options.url", ow.string.nonEmpty);
         }
     }
 

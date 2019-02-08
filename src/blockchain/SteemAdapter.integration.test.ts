@@ -17,7 +17,7 @@ const adapterConfig: SteemAdapter.Options = {
     url: testsConfig.defaultSteemApi,
 };
 
-describe.only("SteemAdapter", function() {
+describe("SteemAdapter", function() {
     this.timeout(20 * 1000); // 20s
 
     type AccHistOp = steem.AccountHistory.Operation;
