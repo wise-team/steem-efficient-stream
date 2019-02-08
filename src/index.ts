@@ -16,3 +16,6 @@ export { SimpleTaker } from "./chainable/SimpleTaker";
 export { ChainableOnError } from "./chainable/ChainableOnError";
 export { OperationNumberFilter } from "./chainable/filters/OperationNumberFilter";
 export { ChainableLimiter } from "./chainable/limiters/ChainableLimiter";
+
+export { AsyncIterator } from "./iterator/AsyncIterator";
+export { AsyncIteratorChainableSupplier } from "./iterator/AsyncIteratorChainableSupplier";
