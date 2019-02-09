@@ -1,0 +1,43 @@
+dist: xenial
+language: node_js
+# node_js: # node version is specified in .nvmrc
+
+install:
+    - npm ci
+
+script:
+    - npm run build
+    - npm run test
+    - npm run verify
+
+before_deploy: 
+  - |
+    if [ $TRAVIS_BRANCH == "development" ]; then
+      npm version prerelease --preid=alpha
+    elif [ $TRAVIS_BRANCH == "staging" ]; then
+      npm version prerelease --preid=beta
+    fi
+  - npm run build
+
+deploy:
+  - provider: npm
+    email: "jedrzejblew@gmail.com"
+    api_key: "YOUR_AUTH_TOKEN"
+    skip_cleanup: true
+    tag: latest
+    on:
+      branch: master
+  - provider: npm
+    email: "jedrzejblew@gmail.com"
+    api_key: "YOUR_AUTH_TOKEN"
+    skip_cleanup: true
+    tag: next
+    on:
+      branch: staging
+  - provider: npm
+    email: "jedrzejblew@gmail.com"
+    api_key: "YOUR_AUTH_TOKEN"
+    skip_cleanup: true
+    tag: alpha
+    on:
+      branch: development
