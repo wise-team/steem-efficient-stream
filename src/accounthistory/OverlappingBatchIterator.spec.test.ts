@@ -3,13 +3,14 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
 
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { AsyncIterator } from "../iterator/AsyncIterator";
 import { AsyncIteratorMock } from "../iterator/AsyncIteratorMock.test";
 import { Log } from "../Log";
 
 import { OverlappingBatchIterator } from "./OverlappingBatchIterator";
 import { mock } from "./OverlappingBatchIterator.mock.test";
+import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
 
 Log.log().initialize();
 chaiUse(chaiAsPromised);
@@ -217,4 +218,40 @@ describe("OverlappingBatchIterator", function() {
             .to.be.an("array")
             .with.length(3);
     });
+
+    [2, 3, 4, 5, 6].forEach(opsInTrx =>
+        it(`preserves order of operations when ${opsInTrx} ops are in each trx, overlap=5`, async () => {
+            const numOfTransactions = 60;
+            const batchSize = 20;
+            const overlapSize = 10;
+            const sampleJoinedTrxs = AccountHistoryOpsMock.generateSampleMultipleTransactions(
+                opsInTrx,
+                "noisy",
+                numOfTransactions,
+            );
+            const sampleSplitTrxs = _.flatten(
+                sampleJoinedTrxs.map(trx => {
+                    const newTrxs: UnifiedSteemTransaction[] = trx.ops.map(op => ({
+                        ...trx,
+                        ops: [op],
+                    }));
+                    return newTrxs;
+                }),
+            );
+            const sampleBatchesReversed = _.reverse(_.chunk(sampleSplitTrxs, batchSize));
+
+            const iteratorMock = new AsyncIteratorMock<UnifiedSteemTransaction[]>(_.cloneDeep(sampleBatchesReversed));
+            const overlappingBatchIterator = new OverlappingBatchIterator(iteratorMock, overlapSize);
+
+            const takenTrxs: UnifiedSteemTransaction[] = [];
+            while (true) {
+                const { done, value } = await overlappingBatchIterator.next();
+                takenTrxs.push(...value);
+                if (done) break;
+            }
+
+            const sampleJoinedTrxsFromNewestToOldest = _.reverse(sampleJoinedTrxs);
+            expect(takenTrxs).to.deep.equal(sampleJoinedTrxsFromNewestToOldest);
+        }),
+    );
 });

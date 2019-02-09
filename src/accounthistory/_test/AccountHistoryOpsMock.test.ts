@@ -1,17 +1,20 @@
 import * as _ from "lodash";
 import * as sinon from "sinon";
-import * as steem from "steem";
 import * as uuid from "uuid/v4";
 
 import { SteemAdapter } from "../../blockchain/SteemAdapter";
 import { SteemAdapterFactory } from "../../blockchain/SteemAdapterFactory";
+import { AccountHistoryOperation } from "../../blockchain/types/AccountHistoryOperation";
+import { VoteOperation } from "../../blockchain/types/VoteOperation";
+import { UnifiedSteemTransaction } from "../../blockchain/types/UnifiedSteemTransaction";
+import { OperationWithDescriptor } from "../../blockchain/types/OperationWithDescriptor";
 
 export namespace AccountHistoryOpsMock {
-    export type OpsGenerator = (account: string, length: number) => steem.AccountHistory.Operation[];
+    export type OpsGenerator = (account: string, length: number) => AccountHistoryOperation[];
 
-    export function generateFakeAccountHistoryOps(account: string, length: number): steem.AccountHistory.Operation[] {
+    export function generateFakeAccountHistoryOps(account: string, length: number): AccountHistoryOperation[] {
         const ops = _.range(0, length).map(index => {
-            const op: steem.VoteOperationWithDescriptor = [
+            const op: VoteOperation.WithDescriptor = [
                 "vote",
                 {
                     voter: account,
@@ -20,7 +23,7 @@ export namespace AccountHistoryOpsMock {
                     weight: -10000 + 20000 * Math.random(),
                 },
             ];
-            const accHistop: steem.AccountHistory.Operation = [
+            const accHistop: AccountHistoryOperation = [
                 index,
                 {
                     block: Math.floor(index / 2),
@@ -37,12 +40,12 @@ export namespace AccountHistoryOpsMock {
         return ops;
     }
 
-    export function getAccountHistoryAsyncMock(fakeAccountHistoryOps: steem.AccountHistory.Operation[]) {
-        const mockedFn: (
+    export function getAccountHistoryAsyncMock(fakeAccountHistoryOps: AccountHistoryOperation[]) {
+        const mockedFn: (account: string, from: number, limit: number) => Promise<AccountHistoryOperation[]> = async (
             account: string,
             from: number,
             limit: number,
-        ) => Promise<steem.AccountHistory.Operation[]> = async (account: string, from: number, limit: number) => {
+        ) => {
             if (from < 0) {
                 from = fakeAccountHistoryOps.length - 1;
             }
@@ -68,5 +71,34 @@ export namespace AccountHistoryOpsMock {
         adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
 
         return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy };
+    }
+
+    export function generateSampleMultipleTransactions(
+        opsInTrx: number,
+        account: string,
+        numOfTransactions: number,
+    ): UnifiedSteemTransaction[] {
+        const transactions: UnifiedSteemTransaction[] = _.range(0, numOfTransactions).map(groupIndex => {
+            const ops: OperationWithDescriptor[] = _.range(0, opsInTrx).map(opIndex => {
+                const opId = `of_op_${opIndex}_${uuid()}`;
+                const op: VoteOperation = {
+                    voter: account,
+                    author: `author_${opId}`,
+                    permlink: `voter_${opId}`,
+                    weight: 100,
+                };
+                const opWithDesc: VoteOperation.WithDescriptor = ["vote", op];
+                return opWithDesc;
+            });
+            const trx: UnifiedSteemTransaction = {
+                block_num: groupIndex,
+                transaction_num: 0,
+                transaction_id: `${uuid()}_trx_${groupIndex}`,
+                timestamp: new Date(),
+                ops,
+            };
+            return trx;
+        });
+        return transactions;
     }
 }

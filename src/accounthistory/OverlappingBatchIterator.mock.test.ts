@@ -1,11 +1,11 @@
 import * as _ from "lodash";
-import * as steem from "steem";
 import * as uuid from "uuid/v4";
 
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
+import { VoteOperation } from "../blockchain/types/VoteOperation";
 
 export namespace mock {
-    export function sampleOp(): steem.VoteOperationWithDescriptor {
+    export function sampleOp(): VoteOperation.WithDescriptor {
         const id = uuid();
         return [
             "vote",
