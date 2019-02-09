@@ -1,6 +1,8 @@
 export { SteemAdapter } from "./blockchain/SteemAdapter";
 export { SteemAdapterFactory } from "./blockchain/SteemAdapterFactory";
 
+export { AccountHistorySupplierFactory } from "./accounthistory/AccountHistorySupplierFactory";
+
 export { BlockchainConfig } from "./blockchain/BlockchainConfig";
 
 export { UnifiedSteemTransaction } from "./blockchain/types/UnifiedSteemTransaction";
