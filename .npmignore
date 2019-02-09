@@ -2,3 +2,6 @@
 /_dev
 /.prettierrc.yml
 /examples
+/coverage
+/.nyc_output
+/.DS_Store

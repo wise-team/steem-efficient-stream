@@ -16,6 +16,10 @@
     "prepare": "NODE_ENV=production npm run build",
     "test": "find src -name '*.spec.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
     "verify": "find src -name '*.integration.test.ts' | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
+    "all-tests": "( find src -name '*.spec.test.ts' & find src -name '*.integration.test.ts' ) | TS_NODE_FILES=true TS_NODE_CACHE=false TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' xargs mocha -r ts-node/register --require source-map-support/register",
+    "test-with-coverage": "nyc npm run test",
+    "verify-with-coverage": "nyc npm run verify",
+    "all-tests-with-coverage": "nyc npm run all-tests",
     "lint-fix": "tslint --fix -c tslint.json -p tsconfig.lint.json"
   },
   "dependencies": {
@@ -27,7 +31,6 @@
     "universe-log": "^1.2.1"
   },
   "devDependencies": {
-    "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "@types/bluebird": "^3.5.25",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
@@ -35,16 +38,35 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.21",
     "@types/sinon": "^7.0.5",
+    "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "@types/uuid": "^3.4.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
+    "nyc": "^13.2.0",
     "sinon": "^7.2.3",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "typescript": "^3.3.3",
     "uuid": "^3.3.2",
     "wise-tslint-configuration": "^0.2.0"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "**/*.test.ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "reporter": [
+      "html"
+    ],
+    "all": true
   },
   "repository": {
     "type": "git",
