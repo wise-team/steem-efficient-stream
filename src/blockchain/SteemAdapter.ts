@@ -1,9 +1,10 @@
 import ow from "ow";
-import * as steem from "steem";
 import { CustomError } from "universe-log";
 
+import { AccountHistoryOperation } from "./types/AccountHistoryOperation";
+
 export interface SteemAdapter {
-    getAccountHistoryAsync(username: string, from: number, limit: number): Promise<steem.AccountHistory.Operation[]>;
+    getAccountHistoryAsync(username: string, from: number, limit: number): Promise<AccountHistoryOperation[]>;
 }
 
 export namespace SteemAdapter {

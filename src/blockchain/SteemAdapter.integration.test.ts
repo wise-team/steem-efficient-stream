@@ -2,7 +2,6 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
-import * as steem from "steem";
 import * as uuid from "uuid/v4";
 
 import { testsConfig } from "../_test/tests-config.test";
@@ -10,6 +9,8 @@ import { testsConfig } from "../_test/tests-config.test";
 import { BlockchainConfig } from "./BlockchainConfig";
 import { SteemAdapter } from "./SteemAdapter";
 import { SteemAdapterImpl } from "./SteemAdapterImpl";
+import { AccountHistoryOperation } from "./types/AccountHistoryOperation";
+import { OperationWithDescriptor } from "./types/OperationWithDescriptor";
 
 chaiUse(chaiAsPromised);
 
@@ -20,7 +21,7 @@ const adapterConfig: SteemAdapter.Options = {
 describe("SteemAdapter", function() {
     this.timeout(20 * 1000); // 20s
 
-    type AccHistOp = steem.AccountHistory.Operation;
+    type AccHistOp = AccountHistoryOperation;
     const usernames: string[] = ["noisy", "fervi", "diosbot"];
     function prepare() {
         const steemAdapter: SteemAdapter = new SteemAdapterImpl(adapterConfig);
@@ -41,7 +42,7 @@ describe("SteemAdapter", function() {
             timestamp: new Date(op[1].timestamp + "Z").getTime(),
         };
     }
-    function getOperationWithDescriptor(op: AccHistOp): steem.OperationWithDescriptor {
+    function getOperationWithDescriptor(op: AccHistOp): OperationWithDescriptor {
         return op[1].op;
     }
 

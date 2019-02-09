@@ -3,7 +3,12 @@ export { SteemAdapterFactory } from "./blockchain/SteemAdapterFactory";
 
 export { BlockchainConfig } from "./blockchain/BlockchainConfig";
 
-export { UnifiedSteemTransaction } from "./blockchain/UnifiedSteemTransaction";
+export { UnifiedSteemTransaction } from "./blockchain/types/UnifiedSteemTransaction";
+export { AccountHistoryOperation } from "./blockchain/types/AccountHistoryOperation";
+export { CustomJsonOperation } from "./blockchain/types/CustomJsonOperation";
+export { OperationWithDescriptor } from "./blockchain/types/OperationWithDescriptor";
+export { OtherOperation } from "./blockchain/types/OtherOperation";
+export { VoteOperation } from "./blockchain/types/VoteOperation";
 export { SteemOperationNumber } from "./blockchain/SteemOperationNumber";
 
 export { Chainable } from "./chainable/Chainable";

@@ -1,5 +1,5 @@
 /* tslint:disable:triple-equals */
-import { UnifiedSteemTransaction } from "./UnifiedSteemTransaction";
+import { UnifiedSteemTransaction } from "./types/UnifiedSteemTransaction";
 
 export class SteemOperationNumber {
     public static FUTURE: SteemOperationNumber = new SteemOperationNumber(Infinity, Infinity, Infinity);

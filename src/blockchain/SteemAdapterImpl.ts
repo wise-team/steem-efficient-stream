@@ -3,6 +3,7 @@ import * as steem from "steem";
 
 import { BlockchainConfig } from "./BlockchainConfig";
 import { SteemAdapter } from "./SteemAdapter";
+import { AccountHistoryOperation } from "./types/AccountHistoryOperation";
 
 export class SteemAdapterImpl implements SteemAdapter {
     private options: SteemAdapter.Options;
@@ -19,7 +20,7 @@ export class SteemAdapterImpl implements SteemAdapter {
         username: string,
         from: number,
         limit: number,
-    ): Promise<steem.AccountHistory.Operation[]> {
+    ): Promise<AccountHistoryOperation[]> {
         ow(username, "username", ow.string.nonEmpty);
         ow(from, "from", ow.number.greaterThanOrEqual(-1));
         ow(limit, "limit", ow.number.inRange(1, BlockchainConfig.ACCOUNT_HISTORY_MAX_BATCH_SIZE));

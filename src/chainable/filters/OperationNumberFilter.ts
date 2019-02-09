@@ -1,5 +1,5 @@
 import { SteemOperationNumber } from "../../blockchain/SteemOperationNumber";
-import { UnifiedSteemTransaction } from "../../blockchain/UnifiedSteemTransaction";
+import { UnifiedSteemTransaction } from "../../blockchain/types/UnifiedSteemTransaction";
 import { ChainableFilter } from "../ChainableFilter";
 
 export class OperationNumberFilter extends ChainableFilter<UnifiedSteemTransaction, OperationNumberFilter> {

@@ -2,7 +2,7 @@ import ow from "ow";
 
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { ChainableSupplier } from "../chainable/ChainableSupplier";
 import { AsyncIterator } from "../iterator/AsyncIterator";
 import { AsyncIteratorChainableSupplier } from "../iterator/AsyncIteratorChainableSupplier";

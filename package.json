@@ -19,7 +19,6 @@
     "lint-fix": "tslint --fix -c tslint.json -p tsconfig.lint.json"
   },
   "dependencies": {
-    "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "lodash": "^4.17.11",
@@ -28,6 +27,7 @@
     "universe-log": "^1.2.1"
   },
   "devDependencies": {
+    "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "@types/bluebird": "^3.5.25",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
