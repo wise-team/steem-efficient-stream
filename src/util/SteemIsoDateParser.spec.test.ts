@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import * as _ from "lodash";
 import "mocha";
-import * as sinon from "sinon";
+
+import { Log } from "../Log";
 
 import { SteemISODateParser } from "./SteemISODateParser";
-import { Log } from "../Log";
 
 Log.log().initialize();
 

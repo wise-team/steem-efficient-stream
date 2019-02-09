@@ -11,6 +11,7 @@ import { SteemAdapter } from "./SteemAdapter";
 import { SteemAdapterImpl } from "./SteemAdapterImpl";
 import { AccountHistoryOperation } from "./types/AccountHistoryOperation";
 import { OperationWithDescriptor } from "./types/OperationWithDescriptor";
+import { VoteOperation } from "./types/VoteOperation";
 
 chaiUse(chaiAsPromised);
 
@@ -170,7 +171,7 @@ describe("SteemAdapter", function() {
                         .that.is.an("array")
                         .that.include(username);
                 } else if (opd[0] === "vote") {
-                    const voteOp = opd[1] as steem.VoteOperation;
+                    const voteOp = opd[1] as VoteOperation;
                     expect(voteOp.voter === username || voteOp.author === username).to.be.equal(true);
                 }
             });

@@ -15,11 +15,11 @@ export function prepare(params: {
         accountHistoryLength: params.accountHistoryLength,
         customOpsGenerator: params.customOpsGenerator,
     });
-    const batchFetch = new RawBatchIterator({
+    const rawBatchIterator = new RawBatchIterator({
         steemAdapter: adapter,
         account,
         batchSize: params.batchSize,
     });
 
-    return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, batchFetch, params };
+    return { account, adapter, fakeAccountHistoryOps, getAccountHistoryAsyncSpy, rawBatchIterator, params };
 }

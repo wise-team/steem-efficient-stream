@@ -5,9 +5,9 @@ import * as uuid from "uuid/v4";
 import { SteemAdapter } from "../../blockchain/SteemAdapter";
 import { SteemAdapterFactory } from "../../blockchain/SteemAdapterFactory";
 import { AccountHistoryOperation } from "../../blockchain/types/AccountHistoryOperation";
-import { VoteOperation } from "../../blockchain/types/VoteOperation";
-import { UnifiedSteemTransaction } from "../../blockchain/types/UnifiedSteemTransaction";
 import { OperationWithDescriptor } from "../../blockchain/types/OperationWithDescriptor";
+import { UnifiedSteemTransaction } from "../../blockchain/types/UnifiedSteemTransaction";
+import { VoteOperation } from "../../blockchain/types/VoteOperation";
 
 export namespace AccountHistoryOpsMock {
     export type OpsGenerator = (account: string, length: number) => AccountHistoryOperation[];
@@ -52,6 +52,7 @@ export namespace AccountHistoryOpsMock {
             const sliceStart = Math.max(from - limit, 0);
             const sliceEndExcluding = sliceStart + limit + 1;
             const result = fakeAccountHistoryOps.slice(sliceStart, sliceEndExcluding);
+
             return result;
         };
         return mockedFn;
@@ -80,11 +81,11 @@ export namespace AccountHistoryOpsMock {
     ): UnifiedSteemTransaction[] {
         const transactions: UnifiedSteemTransaction[] = _.range(0, numOfTransactions).map(groupIndex => {
             const ops: OperationWithDescriptor[] = _.range(0, opsInTrx).map(opIndex => {
-                const opId = `of_op_${opIndex}_${uuid()}`;
+                const opId = `_${opIndex}`;
                 const op: VoteOperation = {
                     voter: account,
-                    author: `author_${opId}`,
-                    permlink: `voter_${opId}`,
+                    author: `a${opId}`,
+                    permlink: `v${opId}`,
                     weight: 100,
                 };
                 const opWithDesc: VoteOperation.WithDescriptor = ["vote", op];

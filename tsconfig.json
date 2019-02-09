@@ -16,7 +16,10 @@
                 "node_modules/*",
                 "src/types/*"
             ]
-        }
+        },
+        "lib": [
+            "es6"
+        ]
     },
     "include": [
         "src/**/*"

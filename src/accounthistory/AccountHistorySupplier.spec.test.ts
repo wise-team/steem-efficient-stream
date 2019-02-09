@@ -6,48 +6,50 @@ import * as sinon from "sinon";
 
 import { Log } from "../Log";
 
-import { prepare, takeTransactionsFromSupplier } from "./AccountHistorySupplier.mocks.test";
+import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
+import { mock } from "./AccountHistorySupplier.mocks.test";
 Log.log().initialize();
 
 chaiUse(chaiAsPromised);
 
 describe("AccountHistorySupplier", function() {
     it("queries only once if batch returns lower number of operations than limit", async () => {
-        const { supplier, getAccountHistoryAsyncSpy } = prepare({
+        const { supplier, getAccountHistoryAsyncSpy } = mock.prepare({
             accountHistoryLength: _.random(0, 999),
             batchOverlap: 5,
             batchSize: 1000,
         });
 
-        await takeTransactionsFromSupplier(supplier);
+        await mock.takeTransactionsFromSupplier(supplier);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
     });
 
     it("queries with correct batchSize", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
-        const { account, supplier, getAccountHistoryAsyncSpy } = prepare({
-            accountHistoryLength: _.random(0, batchSize - 1),
+        const { account, supplier, getAccountHistoryAsyncSpy } = mock.prepare({
+            accountHistoryLength: _.random(0, batchSize),
             batchSize,
             batchOverlap: 5,
         });
 
-        await takeTransactionsFromSupplier(supplier);
+        await mock.takeTransactionsFromSupplier(supplier);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
-        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, batchSize]);
+        const realBatchSize = batchSize - 1;
+        expect(getAccountHistoryAsyncSpy.firstCall.args).to.deep.equal([account, -1, realBatchSize]);
     });
 
     it("query batches does not overlap", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
         const numBatches = _.random(5, 10);
-        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = mock.prepare({
             accountHistoryLength: batchSize * numBatches,
             batchOverlap: 5,
             batchSize,
         });
 
-        await takeTransactionsFromSupplier(supplier);
+        await mock.takeTransactionsFromSupplier(supplier);
 
         let sum = 0;
         for (const call of getAccountHistoryAsyncSpy.getCalls()) {
@@ -57,32 +59,16 @@ describe("AccountHistorySupplier", function() {
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(numBatches);
     });
 
-    it("supplies all transactions returned by a single batch", async () => {
-        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
-            accountHistoryLength: _.random(0, 99),
-            batchOverlap: 5,
-            batchSize: 100,
+    it("supplies all transactions of account history", async () => {
+        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = mock.prepare({
+            accountHistoryLength: _.random(60, 110),
+            batchOverlap: 3,
+            batchSize: 10,
         });
 
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
+        const takenTransactions = await mock.takeTransactionsFromSupplier(supplier);
 
-        const suppliedTrxIds = fakeAccountHistoryOps.map(op => op[1].trx_id);
-        const takenTrxIds = takenTransactions.map(trx => trx.transaction_id);
-
-        expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
-        expect(takenTrxIds).to.have.members(suppliedTrxIds);
-    });
-
-    it("supplies all transactions returned by a multiple batches", async () => {
-        const { supplier, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
-            accountHistoryLength: _.random(500, 1000),
-            batchOverlap: 5,
-            batchSize: 100,
-        });
-
-        const takenTransactions = await takeTransactionsFromSupplier(supplier);
-
-        const suppliedTrxIds = fakeAccountHistoryOps.map(op => op[1].trx_id);
+        const suppliedTrxIds = _.reverse(fakeAccountHistoryOps.map(op => op[1].trx_id));
         const takenTrxIds = takenTransactions.map(trx => trx.transaction_id);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.greaterThan(1);
@@ -93,13 +79,13 @@ describe("AccountHistorySupplier", function() {
         it(
             "supplies transactions from " + test.desc + " in a correct order: from the newest to the oldest",
             async () => {
-                const { supplier, getAccountHistoryAsyncSpy } = prepare({
+                const { supplier, getAccountHistoryAsyncSpy } = mock.prepare({
                     accountHistoryLength: 1000 * test.batches - 1,
                     batchOverlap: 5,
                     batchSize: 1000,
                 });
 
-                const takenTransactions = await takeTransactionsFromSupplier(supplier);
+                const takenTransactions = await mock.takeTransactionsFromSupplier(supplier);
 
                 expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(test.batches);
 
@@ -114,39 +100,39 @@ describe("AccountHistorySupplier", function() {
     );
 
     it("stops supplying after takeFn returns false", async () => {
-        const { supplier } = prepare({
+        const { supplier } = mock.prepare({
             accountHistoryLength: 50,
             batchOverlap: 5,
             batchSize: 10,
         });
 
         const takeCount = 15;
-        const takenTransactions = await takeTransactionsFromSupplier(supplier, takeCount);
+        const takenTransactions = await mock.takeTransactionsFromSupplier(supplier, takeCount);
 
         expect(takenTransactions.length).to.be.equal(takeCount);
     });
 
     it("stops querying after takeFn returns false", async () => {
-        const { supplier, getAccountHistoryAsyncSpy } = prepare({
+        const { supplier, getAccountHistoryAsyncSpy } = mock.prepare({
             accountHistoryLength: 50,
             batchOverlap: 5,
             batchSize: 10,
         });
 
         const takeCount = 15;
-        await takeTransactionsFromSupplier(supplier, takeCount);
+        await mock.takeTransactionsFromSupplier(supplier, takeCount);
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(2);
     });
 
     it("stops querying after error is caught", async () => {
-        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
+        const { supplier, adapter } = mock.prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
 
         const getAccountHistoryAsyncSpy = sinon.fake.rejects(new Error("Test error"));
         adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
 
         try {
-            await takeTransactionsFromSupplier(supplier);
+            await mock.takeTransactionsFromSupplier(supplier);
         } catch (error) {
             // expected
         }
@@ -155,13 +141,13 @@ describe("AccountHistorySupplier", function() {
     });
 
     it("rejects after error is caught", async () => {
-        const { supplier, adapter } = prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
+        const { supplier, adapter } = mock.prepare({ accountHistoryLength: 50, batchOverlap: 5, batchSize: 10 });
 
         const getAccountHistoryAsyncSpy = sinon.fake.rejects(new Error("Test error"));
         adapter.getAccountHistoryAsync = getAccountHistoryAsyncSpy;
 
         try {
-            await takeTransactionsFromSupplier(supplier);
+            await mock.takeTransactionsFromSupplier(supplier);
             throw new Error("Should throw");
         } catch (error) {
             expect(error)
@@ -171,53 +157,36 @@ describe("AccountHistorySupplier", function() {
         }
     });
 
-    it("joins operations that are split to the separate batches", async () => {
-        throw new Error("Specify");
-        /*function doubleOpsGenerator(account: string, length: number): steem.AccountHistory.Operation[] {
-            const ops = _.range(0, length).map(index => {
-                const blockNum = Math.floor(index / 6);
-                const trxNum = Math.floor((index - blockNum * 6) / 2);
-                const opNum = index % 2;
-
-                const op: steem.VoteOperationWithDescriptor = [
-                    "vote",
-                    {
-                        voter: account,
-                        author: "author-" + index,
-                        permlink: "permlink-" + index,
-                        weight: -10000 + 20000 * Math.random(),
-                    },
-                ];
-                const accHistop: steem.AccountHistory.Operation = [
-                    index,
-                    {
-                        block: blockNum,
-                        op,
-                        op_in_trx: opNum,
-                        timestamp: new Date(Date.now() - 10000 + trxNum).toISOString(),
-                        trx_id: "trx_" + trxNum,
-                        trx_in_block: trxNum,
-                        virtual_op: 0,
-                    },
-                ];
-                return accHistop;
+    [2, 3, 4, 5].forEach(opsInTrx => {
+        it(`joins operations that are in separate batches, ${opsInTrx} operations per transaction`, async () => {
+            const batchSize = 83;
+            const numOfTransactions = Math.floor(batchSize * 4.5);
+            const batchOverlap = 8;
+            const sampleTransactions = AccountHistoryOpsMock.generateSampleMultipleTransactions(
+                opsInTrx,
+                "noisy",
+                numOfTransactions,
+            );
+            const accountHistoryLength = opsInTrx * numOfTransactions;
+            const { supplier, fakeAccountHistoryOps } = mock.prepare({
+                accountHistoryLength,
+                batchOverlap,
+                batchSize,
+                customOpsGenerator: mock.splitTransactionsIntoOperationsAccountHistoryGenerator(sampleTransactions),
             });
-            return ops;
-        }
 
-        const { supplier, adapter, fakeAccountHistoryOps } = prepare({
-            accountHistoryLength: 50,
-            batchOverlap: 5,
-            batchSize: 10,
-            customOpsGenerator: doubleOpsGenerator,
-        });*/
-    });
+            const takenTrxs = await mock.takeTransactionsFromSupplier(supplier);
 
-    it("operations in transaction have correct order", async () => {
-        throw new Error("Specify");
-    });
+            expect(takenTrxs)
+                .to.be.an("array")
+                .with.length(numOfTransactions);
 
-    it("does not duplicate transactions", async () => {
-        throw new Error("Specify");
+            const sampleTransactionsFromNewest = _.reverse(_.cloneDeep(sampleTransactions)).map(trx => {
+                return { ...trx, ops: trx.ops };
+            });
+
+            expect(takenTrxs).to.deep.equal(sampleTransactionsFromNewest);
+            expect(takenTrxs).to.deep.equal(sampleTransactionsFromNewest);
+        });
     });
 });

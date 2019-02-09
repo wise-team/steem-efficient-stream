@@ -23,26 +23,39 @@ export class OverlappingBatchIterator implements AsyncIterator<UnifiedSteemTrans
         const { done, value } = await this.batchIterator.next();
         const isLastBatch = done;
         this.done = isLastBatch;
-        return this.returnStrippedBatch(value, isLastBatch);
+
+        if (value.length === 0) {
+            if (done) return { done: true, value: [] };
+            else {
+                throw new Error(
+                    "OverlappingBatchFetch: received empty batch from upstream iterator, without done signal",
+                );
+            }
+        }
+
+        const ret = this.returnStrippedBatch(value, isLastBatch);
+        return ret;
     }
 
     private returnStrippedBatch(takenBatch: UnifiedSteemTransaction[], isLastBatch: boolean) {
-        // we are going deeper from newest to oldest, that is why previous if AFTER current batch
-        const takenBatchWithPreviousOverlap = [...takenBatch, ...this.previousBatchOverlap];
+        const takenBatchWithPreviousOverlap = [...this.previousBatchOverlap, ...takenBatch];
         this.previousBatchOverlap = [];
         const trxsJoinedNotSorted = this.joinTrxs(takenBatchWithPreviousOverlap);
         const trxsJoinedSorted = this.sortTransactionsFromNewestToOldest(trxsJoinedNotSorted);
+
         if (isLastBatch) {
-            return { done: true, value: trxsJoinedSorted };
+            return { done: true, value: _.cloneDeep(trxsJoinedSorted) };
         } else {
             const { passItems, overlapItems } = this.stripOverlap(trxsJoinedSorted);
             this.previousBatchOverlap = overlapItems;
-            return { done: false, value: passItems };
+
+            return { done: false, value: _.cloneDeep(passItems) };
         }
     }
 
     private joinTrxs(trxs: UnifiedSteemTransaction[]): UnifiedSteemTransaction[] {
         const indexed = this.indexNonJoinedTrxs(trxs);
+
         const trxsGroupedByTransactionId = this.groupTransactionsById(indexed);
 
         const joinedTrxs = _.keys(trxsGroupedByTransactionId).map(trxId => {
@@ -70,7 +83,7 @@ export class OverlappingBatchIterator implements AsyncIterator<UnifiedSteemTrans
     private joinTransactionGroupAndRemoveOrderIndex(
         transactionGroup: Array<UnifiedSteemTransaction & OrderIndexed>,
     ): UnifiedSteemTransaction {
-        const transactionGroupSorted = _.sortBy(transactionGroup, ["orderIndex"]);
+        const transactionGroupSorted = _.reverse(_.sortBy(transactionGroup, ["orderIndex"]));
         const ops: OperationWithDescriptor[] = [];
         transactionGroupSorted.forEach(trx => ops.push(...trx.ops));
         const indexedJoinedTrx: UnifiedSteemTransaction & OrderIndexed = {
@@ -83,7 +96,10 @@ export class OverlappingBatchIterator implements AsyncIterator<UnifiedSteemTrans
 
     private stripOverlap<T extends any>(batch: T[]): { passItems: T[]; overlapItems: T[] } {
         const batchClone = batch.slice();
-        const passLength = batchClone.length - this.overlapDepth;
+        const overlapSize = Math.min(batchClone.length, this.overlapDepth);
+
+        const passLength = batchClone.length - overlapSize;
+        if (passLength < 0) throw new Error(`Cannot pass ${passLength} transactions`);
         const passItems = batchClone.splice(0, passLength);
         const overlapItems = batchClone;
         return { passItems, overlapItems };

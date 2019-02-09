@@ -8,9 +8,9 @@ import { AsyncIterator } from "../iterator/AsyncIterator";
 import { AsyncIteratorMock } from "../iterator/AsyncIteratorMock.test";
 import { Log } from "../Log";
 
+import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
 import { OverlappingBatchIterator } from "./OverlappingBatchIterator";
 import { mock } from "./OverlappingBatchIterator.mock.test";
-import { AccountHistoryOpsMock } from "./_test/AccountHistoryOpsMock.test";
 
 Log.log().initialize();
 chaiUse(chaiAsPromised);
@@ -219,11 +219,11 @@ describe("OverlappingBatchIterator", function() {
             .with.length(3);
     });
 
-    [2, 3, 4, 5, 6].forEach(opsInTrx =>
-        it(`preserves order of operations when ${opsInTrx} ops are in each trx, overlap=5`, async () => {
-            const numOfTransactions = 60;
-            const batchSize = 20;
-            const overlapSize = 10;
+    [2, 3, 4, 5].forEach(opsInTrx =>
+        it(`preserves order of operations when ${opsInTrx} ops are in each trx, overlap=8`, async () => {
+            const batchSize = 83;
+            const numOfTransactions = Math.floor(batchSize * 4.5);
+            const overlapSize = 8;
             const sampleJoinedTrxs = AccountHistoryOpsMock.generateSampleMultipleTransactions(
                 opsInTrx,
                 "noisy",
@@ -238,7 +238,7 @@ describe("OverlappingBatchIterator", function() {
                     return newTrxs;
                 }),
             );
-            const sampleBatchesReversed = _.reverse(_.chunk(sampleSplitTrxs, batchSize));
+            const sampleBatchesReversed = _.chunk(_.reverse(sampleSplitTrxs), batchSize);
 
             const iteratorMock = new AsyncIteratorMock<UnifiedSteemTransaction[]>(_.cloneDeep(sampleBatchesReversed));
             const overlappingBatchIterator = new OverlappingBatchIterator(iteratorMock, overlapSize);

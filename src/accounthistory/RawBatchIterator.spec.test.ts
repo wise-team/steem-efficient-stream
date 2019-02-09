@@ -3,10 +3,10 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
 import * as sinon from "sinon";
-import * as steem from "steem";
 
 import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { AccountHistoryOperation } from "../blockchain/types/AccountHistoryOperation";
+import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { Log } from "../Log";
 
 import { RawBatchIterator } from "./RawBatchIterator";
@@ -24,10 +24,10 @@ describe("RawBatchIterator", function() {
     it("rejects with error thrown by SteemAdapter", async () => {
         const steemAdapter = SteemAdapterFactory.mock();
         steemAdapter.getAccountHistoryAsync = sinon.fake.rejects(new Error("Test error"));
-        const batchFetch = new RawBatchIterator({ steemAdapter, batchSize: 100, account: "doesnt matter" });
+        const rawBatchIterator = new RawBatchIterator({ steemAdapter, batchSize: 100, account: "doesnt matter" });
 
         try {
-            await batchFetch.next();
+            await rawBatchIterator.next();
             expect.fail("Should throw");
         } catch (error) {
             expect(error)
@@ -37,47 +37,47 @@ describe("RawBatchIterator", function() {
     });
 
     it("returns whole batch", async () => {
-        const { batchFetch } = prepare(defaultProps);
+        const { rawBatchIterator } = prepare(defaultProps);
 
-        const { value, done } = await batchFetch.next();
+        const { value, done } = await rawBatchIterator.next();
         expect(value.length).to.be.equal(defaultProps.batchSize);
     });
 
     it("returns done subsequentially after whole account history has been fetched", async () => {
-        const { batchFetch } = prepare({
+        const { rawBatchIterator } = prepare({
             accountHistoryLength: 10,
             batchSize: 20,
         });
 
         {
-            const { done } = await batchFetch.next();
+            const { done } = await rawBatchIterator.next();
             expect(done).to.be.equal(true);
         }
         {
-            const { done } = await batchFetch.next();
+            const { done } = await rawBatchIterator.next();
             expect(done).to.be.equal(true);
         }
     });
 
     it("queries only once if batch returns lower number of operations than limit", async () => {
-        const { batchFetch, getAccountHistoryAsyncSpy } = prepare({
+        const { rawBatchIterator, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: _.random(0, 999),
             batchSize: 1000,
         });
 
-        await batchFetch.next();
+        await rawBatchIterator.next();
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
     });
 
     it("queries with correct batchSize", async () => {
         const batchSize = _.random(10, 1000);
-        const { batchFetch, getAccountHistoryAsyncSpy, account } = prepare({
+        const { rawBatchIterator, getAccountHistoryAsyncSpy, account } = prepare({
             accountHistoryLength: _.random(1, 999),
             batchSize,
         });
 
-        await batchFetch.next();
+        await rawBatchIterator.next();
 
         expect(getAccountHistoryAsyncSpy.callCount).to.be.equal(1);
         const realBatchSize = batchSize - 1;
@@ -105,13 +105,13 @@ describe("RawBatchIterator", function() {
     ].forEach(test =>
         it(test.name, async () => {
             const accountHistoryLength = test.accountHistoryLength;
-            const { batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+            const { rawBatchIterator, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
                 accountHistoryLength,
                 batchSize: baseBatchSize,
             });
 
             while (true) {
-                const { done } = await batchFetch.next();
+                const { done } = await rawBatchIterator.next();
                 if (done) {
                     break;
                 }
@@ -130,13 +130,13 @@ describe("RawBatchIterator", function() {
     it("does not loop endlessly when accountHistoryLength is a multiplication of batchSize", async () => {
         const batchSize = Math.floor(Math.random() * 1000);
         const numBatches = _.random(5, 10);
-        const { batchFetch, getAccountHistoryAsyncSpy } = prepare({
+        const { rawBatchIterator, getAccountHistoryAsyncSpy } = prepare({
             accountHistoryLength: batchSize * numBatches,
             batchSize,
         });
 
         while (true) {
-            const { done } = await batchFetch.next();
+            const { done } = await rawBatchIterator.next();
             if (done) {
                 break;
             }
@@ -146,33 +146,45 @@ describe("RawBatchIterator", function() {
     });
 
     it("supplies all transactions from the newest to the oldest", async () => {
-        const { batchFetch, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { rawBatchIterator, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: _.random(50, 80),
             batchSize: _.random(2, 5),
         });
 
         const retrivedTrxs: UnifiedSteemTransaction[] = [];
         while (true) {
-            const { value, done } = await batchFetch.next();
+            const { value, done } = await rawBatchIterator.next();
             retrivedTrxs.push(...value);
             if (done) {
                 break;
             }
         }
         const retrivedTrxIds = retrivedTrxs.map(trx => trx.transaction_id);
-        const mockedTrxIds = fakeAccountHistoryOps.map((op: steem.AccountHistory.Operation) => op[1].trx_id);
-        expect(retrivedTrxIds).to.be.equal(mockedTrxIds);
-    });
-
-    it("fetches whole account history", async () => {
-        throw new Error("Specify");
+        const mockedTrxIds = _.reverse(fakeAccountHistoryOps.map((op: AccountHistoryOperation) => op[1].trx_id));
+        expect(retrivedTrxIds).to.deep.equal(mockedTrxIds);
     });
 
     it("does not duplicate transactions", async () => {
-        throw new Error("Specify");
-    });
+        const { rawBatchIterator, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+            accountHistoryLength: _.random(50, 80),
+            batchSize: _.random(2, 5),
+        });
 
-    it("returns undefined on each subsequent fetch after whole account history has been fetched", async () => {
-        throw new Error("Specify");
+        const retrivedTrxs: UnifiedSteemTransaction[] = [];
+        while (true) {
+            const { value, done } = await rawBatchIterator.next();
+            retrivedTrxs.push(...value);
+            if (done) {
+                break;
+            }
+        }
+
+        const retrivedTrxIds = retrivedTrxs.map(trx => trx.transaction_id);
+
+        const alreadyHadTrxIds: string[] = [];
+        for (const retrivedTrxId of retrivedTrxIds) {
+            if (alreadyHadTrxIds.indexOf(retrivedTrxId) >= 0) expect.fail(`Trx ${retrivedTrxId} is duplicate`);
+            alreadyHadTrxIds.push(retrivedTrxId);
+        }
     });
 });
