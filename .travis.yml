@@ -22,21 +22,24 @@ before_deploy:
 deploy:
   - provider: npm
     email: "jedrzejblew@gmail.com"
-    api_key: "YOUR_AUTH_TOKEN"
+    api_key:
+      secure: "IsajF68t3xbiwZDiSuXI2dCkTVQyWJOmujd7flDgoFSfCjFv1pwAi/Y2CqTZDl9VrM+3ZqGcffSRpCLrnz1U01TErVzCrMnWg9M/jda4H4hs5AS1rmCcWPA6zQxQZH6p0zzP6eQDg7ybAnuMoHjxd3GSC3/bp8OHuUqmqPN38D50ktXwfwpttx1+QuOt3UA1e2E5G+71llOAOSHpiBOxBDjWMSsYoUG2cI78Y7JfmxA5UoAqGx6XOv9fVy792y/Ck2Dm8FZ9ysB8f+K1TCG3GT81xuPMp9B1gII3pCidgXplyBhQxGDnBFWhaxiE28jqqjY7kvVwXNpy3iPXBATKZL4V7QHaCYSQcmNOwX1HKMHU/FETBbwr7tLoxJOhdRJDj4HGJNxpkwqlU0hL2XEIAsCnhiHXbBrVkbXbnilbgnbZ2X1eMCncYUS7mKjwikVeXVYWIfxoRlcMpdKwZNDg2r9Ri0vZM4FNrPYnp5KsuMUfV5Qar4bRbEGxm7jLxjdD7B29JU8t+1XZs9q3od3dz8Sv6BWFDBptCxRuYXwfG6dFaBymrlqo6vhA61PWwCMx41yDDE8v0XlsRHM31LEM4B9+Spfiv/+Rv/yTFErqXMWVN8OB00INPjzeBnQfr+zboR93Ubc9HgBvLesHGt1NYta58UCIjNJEBmKh7ifdN80="
     skip_cleanup: true
     tag: latest
     on:
       branch: master
   - provider: npm
     email: "jedrzejblew@gmail.com"
-    api_key: "YOUR_AUTH_TOKEN"
+    api_key:
+      secure: "IsajF68t3xbiwZDiSuXI2dCkTVQyWJOmujd7flDgoFSfCjFv1pwAi/Y2CqTZDl9VrM+3ZqGcffSRpCLrnz1U01TErVzCrMnWg9M/jda4H4hs5AS1rmCcWPA6zQxQZH6p0zzP6eQDg7ybAnuMoHjxd3GSC3/bp8OHuUqmqPN38D50ktXwfwpttx1+QuOt3UA1e2E5G+71llOAOSHpiBOxBDjWMSsYoUG2cI78Y7JfmxA5UoAqGx6XOv9fVy792y/Ck2Dm8FZ9ysB8f+K1TCG3GT81xuPMp9B1gII3pCidgXplyBhQxGDnBFWhaxiE28jqqjY7kvVwXNpy3iPXBATKZL4V7QHaCYSQcmNOwX1HKMHU/FETBbwr7tLoxJOhdRJDj4HGJNxpkwqlU0hL2XEIAsCnhiHXbBrVkbXbnilbgnbZ2X1eMCncYUS7mKjwikVeXVYWIfxoRlcMpdKwZNDg2r9Ri0vZM4FNrPYnp5KsuMUfV5Qar4bRbEGxm7jLxjdD7B29JU8t+1XZs9q3od3dz8Sv6BWFDBptCxRuYXwfG6dFaBymrlqo6vhA61PWwCMx41yDDE8v0XlsRHM31LEM4B9+Spfiv/+Rv/yTFErqXMWVN8OB00INPjzeBnQfr+zboR93Ubc9HgBvLesHGt1NYta58UCIjNJEBmKh7ifdN80="
     skip_cleanup: true
     tag: next
     on:
       branch: staging
   - provider: npm
     email: "jedrzejblew@gmail.com"
-    api_key: "YOUR_AUTH_TOKEN"
+    api_key:
+      secure: "IsajF68t3xbiwZDiSuXI2dCkTVQyWJOmujd7flDgoFSfCjFv1pwAi/Y2CqTZDl9VrM+3ZqGcffSRpCLrnz1U01TErVzCrMnWg9M/jda4H4hs5AS1rmCcWPA6zQxQZH6p0zzP6eQDg7ybAnuMoHjxd3GSC3/bp8OHuUqmqPN38D50ktXwfwpttx1+QuOt3UA1e2E5G+71llOAOSHpiBOxBDjWMSsYoUG2cI78Y7JfmxA5UoAqGx6XOv9fVy792y/Ck2Dm8FZ9ysB8f+K1TCG3GT81xuPMp9B1gII3pCidgXplyBhQxGDnBFWhaxiE28jqqjY7kvVwXNpy3iPXBATKZL4V7QHaCYSQcmNOwX1HKMHU/FETBbwr7tLoxJOhdRJDj4HGJNxpkwqlU0hL2XEIAsCnhiHXbBrVkbXbnilbgnbZ2X1eMCncYUS7mKjwikVeXVYWIfxoRlcMpdKwZNDg2r9Ri0vZM4FNrPYnp5KsuMUfV5Qar4bRbEGxm7jLxjdD7B29JU8t+1XZs9q3od3dz8Sv6BWFDBptCxRuYXwfG6dFaBymrlqo6vhA61PWwCMx41yDDE8v0XlsRHM31LEM4B9+Spfiv/+Rv/yTFErqXMWVN8OB00INPjzeBnQfr+zboR93Ubc9HgBvLesHGt1NYta58UCIjNJEBmKh7ifdN80="
     skip_cleanup: true
     tag: alpha
     on:
