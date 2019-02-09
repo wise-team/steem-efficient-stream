@@ -1,11 +1,12 @@
 import ow from "ow";
-import * as steem from "steem";
 
 import { BlockchainConfig } from "../blockchain/BlockchainConfig";
 import { SteemAdapter } from "../blockchain/SteemAdapter";
-import { UnifiedSteemTransaction } from "../blockchain/UnifiedSteemTransaction";
+import { AccountHistoryOperation } from "../blockchain/types/AccountHistoryOperation";
+import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { AsyncIterator } from "../iterator/AsyncIterator";
 import { Log } from "../Log";
+import { SteemISODateParser } from "../util/SteemIsoDateParser";
 
 export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]> {
     private exclusiveBatchSize: number;
@@ -40,7 +41,7 @@ export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]
         return { done: !hasMore, value: batch };
     }
 
-    private async loadFrom(from: number): Promise<steem.AccountHistory.Operation[]> {
+    private async loadFrom(from: number): Promise<AccountHistoryOperation[]> {
         // Sometimes at the end of account history "from" can be lower than 1000. In that case we should set
         // limit to "from". It will simply load operations including the oldest one.
         const batchLimit = from === -1 ? this.exclusiveBatchSize : Math.min(this.exclusiveBatchSize, from);
@@ -58,19 +59,16 @@ export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]
         return result;
     }
 
-    private async loadBatchFromNewestToOldest(
-        from: number,
-        batchLimit: number,
-    ): Promise<steem.AccountHistory.Operation[]> {
+    private async loadBatchFromNewestToOldest(from: number, batchLimit: number): Promise<AccountHistoryOperation[]> {
         const batchFromOldestToNewest = await this.loadBatchFromServer(from, batchLimit);
         return batchFromOldestToNewest.reverse();
     }
 
-    private async loadBatchFromServer(from: number, batchLimit: number): Promise<steem.AccountHistory.Operation[]> {
+    private async loadBatchFromServer(from: number, batchLimit: number): Promise<AccountHistoryOperation[]> {
         return await this.steemAdapter.getAccountHistoryAsync(this.account, from, batchLimit);
     }
 
-    private calculateNextFrom(batch: steem.AccountHistory.Operation[]): number | undefined {
+    private calculateNextFrom(batch: AccountHistoryOperation[]): number | undefined {
         const accountHistoryDoesNotHaveMoreOperations = batch.length < this.exclusiveBatchSize;
         if (accountHistoryDoesNotHaveMoreOperations) {
             return undefined;
@@ -83,18 +81,18 @@ export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]
         return nextBatchFrom;
     }
 
-    private getIndexOfOp(op: steem.AccountHistory.Operation) {
+    private getIndexOfOp(op: AccountHistoryOperation) {
         return op[0];
     }
 
-    private opToTrx(op: steem.AccountHistory.Operation): UnifiedSteemTransaction {
+    private opToTrx(op: AccountHistoryOperation): UnifiedSteemTransaction {
         const opDescriptor = op[1];
         return {
             block_num: opDescriptor.block,
             transaction_num: opDescriptor.trx_in_block,
             transaction_id: opDescriptor.trx_id,
             // the following is UTC time (Z marks it so that it can be converted to local time properly)
-            timestamp: new Date(opDescriptor.timestamp + "Z"),
+            timestamp: SteemISODateParser.parse(opDescriptor.timestamp),
             ops: [opDescriptor.op],
         };
     }
