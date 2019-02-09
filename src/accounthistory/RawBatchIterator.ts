@@ -6,7 +6,7 @@ import { AccountHistoryOperation } from "../blockchain/types/AccountHistoryOpera
 import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { AsyncIterator } from "../iterator/AsyncIterator";
 import { Log } from "../Log";
-import { SteemISODateParser } from "../util/SteemIsoDateParser";
+import { SteemISODateParser } from "../util/SteemISODateParser";
 
 export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]> {
     private exclusiveBatchSize: number;

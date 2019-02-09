@@ -8,7 +8,7 @@ import { SteemISODateParser } from "./SteemISODateParser";
 
 Log.log().initialize();
 
-describe("SteemIsoDateParser", function() {
+describe("SteemISODateParser", function() {
     it("parses correctly date without timezone", async () => {
         const isoDate = "2019-02-09T00:00:00";
         const expectedTimestampMs = 1549670400000;
