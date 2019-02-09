@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import { UnifiedSteemTransaction } from "../blockchain/types/UnifiedSteemTransaction";
 import { AsyncIterator } from "../iterator/AsyncIterator";
 
-export class BatchToTrxIterator implements AsyncIterator<UnifiedSteemTransaction> {
+export class BatchToTrxIterator implements AsyncIterator<UnifiedSteemTransaction | undefined> {
     private batchIterator: AsyncIterator<UnifiedSteemTransaction[]>;
     private currentBatch: UnifiedSteemTransaction[] = [];
     private upstreamDone: boolean = false;
@@ -12,12 +12,17 @@ export class BatchToTrxIterator implements AsyncIterator<UnifiedSteemTransaction
         this.batchIterator = batchIterator;
     }
 
-    public async next(): Promise<IteratorResult<UnifiedSteemTransaction>> {
+    public async next(): Promise<IteratorResult<UnifiedSteemTransaction | undefined>> {
         if (this.isDone()) throw AsyncIterator.AsyncIteratorError.iteratorAlreadyDoneError();
         await this.loadNextBatchIfRequired();
 
         const shifted = this.currentBatch.shift();
-        if (!shifted) throw new Error("BatchToTrxIterator: current batch could not be shifted");
+        if (!shifted) {
+            if (!this.upstreamDone) {
+                throw new Error("BatchToTrxIterator: current batch could not be shifted and upstream is not yet done");
+            }
+            return { done: true, value: undefined };
+        }
 
         return { done: this.isDone(), value: _.cloneDeep(shifted) };
     }

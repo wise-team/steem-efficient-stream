@@ -28,6 +28,9 @@ export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]
 
     public async next(): Promise<IteratorResult<UnifiedSteemTransaction[]>> {
         const batchRaw = await this.loadFrom(this.nextFrom);
+        if (batchRaw.length === 0) {
+            return { done: true, value: [] };
+        }
 
         const nextWouldBe = this.calculateNextFrom(batchRaw);
         let hasMore = false;
@@ -47,14 +50,20 @@ export class RawBatchIterator implements AsyncIterator<UnifiedSteemTransaction[]
         const batchLimit = from === -1 ? this.exclusiveBatchSize : Math.min(this.exclusiveBatchSize, from);
 
         const result = await this.loadBatchFromNewestToOldest(from, batchLimit);
-        Log.log().debug("NonJoinedBatchFetch.loadFrom", {
-            account: this.account,
-            from,
-            batchLimit,
-            exclusiveBatchSize: this.exclusiveBatchSize,
-            resultLength: result.length,
-            range: [this.getIndexOfOp(result[0]), this.getIndexOfOp(result[result.length - 1])],
-        });
+        Log.log().debugGen(() => [
+            "NonJoinedBatchFetch.loadFrom",
+            {
+                account: this.account,
+                from,
+                batchLimit,
+                exclusiveBatchSize: this.exclusiveBatchSize,
+                resultLength: result.length,
+                range:
+                    result.length > 0
+                        ? [this.getIndexOfOp(result[0]), this.getIndexOfOp(result[result.length - 1])]
+                        : [0, 0],
+            },
+        ]);
 
         return result;
     }

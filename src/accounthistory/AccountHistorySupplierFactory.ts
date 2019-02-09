@@ -44,7 +44,7 @@ export class AccountHistorySupplierFactory {
         return this;
     }
 
-    public buildIterator(): AsyncIterator<UnifiedSteemTransaction> {
+    public buildIterator(): AsyncIterator<UnifiedSteemTransaction | undefined> {
         const rawBatchIterator = new RawBatchIterator({
             steemAdapter: this.steemAdapter,
             account: this.account,

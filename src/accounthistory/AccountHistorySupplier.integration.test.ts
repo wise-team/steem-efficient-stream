@@ -2,6 +2,7 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
+import * as uuid from "uuid/v4";
 
 import { testsConfig } from "../_test/tests-config.test";
 import { SteemAdapterFactory } from "../blockchain/SteemAdapterFactory";
@@ -67,11 +68,35 @@ describe("AccountHistorySupplier", function() {
         const iterator = new AccountHistorySupplierFactory(steemAdapter, account).withBatchSize(10).buildIterator();
 
         const { value } = await iterator.next();
+        if (!value) return expect.fail("Got undefined value");
         const newestTrx = value;
         expect(newestTrx.timestamp).to.be.instanceOf(Date);
         const timestamp = newestTrx.timestamp.getTime();
         expect(Number.isInteger(timestamp)).to.be.equal(true);
         expect(Number.isFinite(timestamp)).to.be.equal(true);
         expect(timestamp > 0).to.be.equal(true);
+    });
+
+    it("iterator returns undefined and marks done on nonexistent voter", async () => {
+        const account = `nonexistent${uuid()}`;
+        const steemAdapter = SteemAdapterFactory.withOptions({ url: testsConfig.defaultSteemApi });
+        const iterator = new AccountHistorySupplierFactory(steemAdapter, account).withBatchSize(10).buildIterator();
+
+        const { done, value } = await iterator.next();
+        expect(value).to.be.an("undefined");
+        expect(done).to.be.equal(true);
+    });
+
+    it("ChainableSupplier returns undefined and marks done on nonexistent voter", async () => {
+        const account = `nonexistent${uuid()}`;
+        const steemAdapter = SteemAdapterFactory.withOptions({ url: testsConfig.defaultSteemApi });
+        const supplier = new AccountHistorySupplierFactory(steemAdapter, account)
+            .withBatchSize(10)
+            .buildChainableSupplier();
+
+        const trxs = await takeTransactionsFromSupplier(supplier);
+        expect(trxs)
+            .to.be.an("array")
+            .with.length(0);
     });
 });

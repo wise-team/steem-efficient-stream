@@ -3,10 +3,10 @@ import { ChainableSupplier } from "../chainable/ChainableSupplier";
 import { AsyncIterator } from "./AsyncIterator";
 
 export class AsyncIteratorChainableSupplier<T> extends ChainableSupplier<T, AsyncIteratorChainableSupplier<T>> {
-    private iterator: AsyncIterator<T>;
+    private iterator: AsyncIterator<T | undefined>;
     private done: boolean = false;
 
-    constructor(iterator: AsyncIterator<T>) {
+    constructor(iterator: AsyncIterator<T | undefined>) {
         super();
 
         this.iterator = iterator;
@@ -26,6 +26,9 @@ export class AsyncIteratorChainableSupplier<T> extends ChainableSupplier<T, Asyn
     private async next(): Promise<{ done: boolean }> {
         try {
             const { value, done } = await this.iterator.next();
+            if (!value && done) {
+                return { done: true };
+            }
             const takerWantsMore = this.give(undefined, value);
             return { done: done || !takerWantsMore };
         } catch (error) {
