@@ -39,7 +39,7 @@ describe("RawBatchIterator", function() {
     it("returns whole batch", async () => {
         const { rawBatchIterator } = prepare(defaultProps);
 
-        const { value, done } = await rawBatchIterator.next();
+        const { value } = await rawBatchIterator.next();
         expect(value.length).to.be.equal(defaultProps.batchSize);
     });
 
@@ -146,7 +146,7 @@ describe("RawBatchIterator", function() {
     });
 
     it("supplies all transactions from the newest to the oldest", async () => {
-        const { rawBatchIterator, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { rawBatchIterator, fakeAccountHistoryOps } = prepare({
             accountHistoryLength: _.random(50, 80),
             batchSize: _.random(2, 5),
         });
@@ -165,7 +165,7 @@ describe("RawBatchIterator", function() {
     });
 
     it("does not duplicate transactions", async () => {
-        const { rawBatchIterator, getAccountHistoryAsyncSpy, fakeAccountHistoryOps } = prepare({
+        const { rawBatchIterator } = prepare({
             accountHistoryLength: _.random(50, 80),
             batchSize: _.random(2, 5),
         });

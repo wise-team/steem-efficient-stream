@@ -168,7 +168,7 @@ describe("AccountHistorySupplier", function() {
                 numOfTransactions,
             );
             const accountHistoryLength = opsInTrx * numOfTransactions;
-            const { supplier, fakeAccountHistoryOps } = mock.prepare({
+            const { supplier } = mock.prepare({
                 accountHistoryLength,
                 batchOverlap,
                 batchSize,
