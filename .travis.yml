@@ -12,23 +12,12 @@ script:
 
 before_deploy:
   - echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
+  - scripts/ci/version.sh
 
 deploy:
   - provider: script
     on:
       branch: development
       tags: false
-    script: bash scripts/ci/publish-development.sh
-    skip_cleanup: true
-  - provider: script
-    on:
-      branch: staging
-      tags: false
-    script: bash scripts/ci/publish-staging.sh
-    skip_cleanup: true
-  - provider: script
-    on:
-      branch: production
-      tags: false
-    script: bash scripts/ci/publish-production.sh
+    script: bash scripts/ci/publish.sh
     skip_cleanup: true

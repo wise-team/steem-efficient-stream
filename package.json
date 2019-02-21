@@ -27,8 +27,7 @@
     "prepatch": "npm version prepatch --preid=$(git rev-parse --abbrev-ref HEAD)",
     "preminor": "npm version preminor --preid=$(git rev-parse --abbrev-ref HEAD)",
     "premajor": "npm version premajor --preid=$(git rev-parse --abbrev-ref HEAD)",
-    "ci-version": "node -e \"const pkgo = require('./package.json'); pkgo.version=pkgo.version.replace(/\\.b[0-9]+$/ui, '') + '.b' + Date.now();require('fs').writeFileSync('./package.json', JSON.stringify(pkgo, undefined, 2), 'UTF-8');\"",
-    "release": "npm version -i && npm run conventional-github-releaser -p angular"
+    "release": "./scripts/release.sh"
   },
   "dependencies": {
     "axios": "^0.18.0",
