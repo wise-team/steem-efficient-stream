@@ -1,46 +1,30 @@
 dist: xenial
 language: node_js
-# node_js: # node version is specified in .nvmrc
 
 install:
-    - npm ci
+  - npm ci
 
 script:
-    - npm run build
-    - npm run test
-    - npm run verify
-
-before_deploy: 
-  - |
-    if [ $TRAVIS_BRANCH == "development" ]; then
-      npm version prerelease --preid=alpha
-    elif [ $TRAVIS_BRANCH == "staging" ]; then
-      npm version prerelease --preid=beta
-    fi
   - npm run build
+  - npm run test
+  - echo "sleep random number of seconds 1-10 to prevent blockchain collisions" && sleep "$(( ( RANDOM % 10 )  + 1 ))"
+  - npm run verify
 
 deploy:
-  - provider: npm
-    email: "jedrzejblew@gmail.com"
-    api_key:
-      secure: "MMPMf/4e3NyCQo3bi0PgoQyxjGesv4J1k/xMIiH9KvZnXtMx7QbpASX1fstPS3vNxtssjb2e+stkOAIiuAVsVUgm0UqdYfulRMefm2XAhNnQHT5aJtt5OBJlyzb6yiPXvDtqIml1uS0v1Su27/yP7s0z/gpJ5BanXz40Zc+3g6FHnvQQHjVSoLe3o3p692E7DdgUajq7S/JYHwOkehM/7Qc7QM/U/qc+3n1aDGu5q6l9ta9N8/uGQc2LwOeBW25rXvoOi2Hw1d/Vr7e9NrqBZeoX2fAPxt80+CrHQPpastoX9TJd4Q3UlRsw+HWqBhl8FbhW/QmqvuiiO/ZpZzymBc96FXunX0pPF4dxJf6Ahj6uOyoFHi6L0Y1cBsRNs5oU0Kd9ZTMWeis2LAe4qVngsQWu7VajNdCaFeDrvxZyOdfRJUf675qjv8wX2WFfJdXQpnBg4Al+YJRKYlPn9Y7SaERDa2olc4Wqb6uTByRx7FFa/jQ+alyWoenCazw5XFbstbSw6stpKD90E0ghuLCPu1lgW8x+vJbNTFyM9q7ivVF4aWBsz0+Q4bgr9t5lAyKaBxLnfDW70lx29JDrkrhgjkuKeoVWBIMrYb95jNK6WoGH6W+pIwygl5FXT5Mg8XM6amO1yAvFQEyWyM4DNVpmf6kPjJrLgewO44Nlp3G1bEY="
-    skip_cleanup: true
-    tag: latest
-    on:
-      branch: master
-  - provider: npm
-    email: "jedrzejblew@gmail.com"
-    api_key:
-      secure: "MMPMf/4e3NyCQo3bi0PgoQyxjGesv4J1k/xMIiH9KvZnXtMx7QbpASX1fstPS3vNxtssjb2e+stkOAIiuAVsVUgm0UqdYfulRMefm2XAhNnQHT5aJtt5OBJlyzb6yiPXvDtqIml1uS0v1Su27/yP7s0z/gpJ5BanXz40Zc+3g6FHnvQQHjVSoLe3o3p692E7DdgUajq7S/JYHwOkehM/7Qc7QM/U/qc+3n1aDGu5q6l9ta9N8/uGQc2LwOeBW25rXvoOi2Hw1d/Vr7e9NrqBZeoX2fAPxt80+CrHQPpastoX9TJd4Q3UlRsw+HWqBhl8FbhW/QmqvuiiO/ZpZzymBc96FXunX0pPF4dxJf6Ahj6uOyoFHi6L0Y1cBsRNs5oU0Kd9ZTMWeis2LAe4qVngsQWu7VajNdCaFeDrvxZyOdfRJUf675qjv8wX2WFfJdXQpnBg4Al+YJRKYlPn9Y7SaERDa2olc4Wqb6uTByRx7FFa/jQ+alyWoenCazw5XFbstbSw6stpKD90E0ghuLCPu1lgW8x+vJbNTFyM9q7ivVF4aWBsz0+Q4bgr9t5lAyKaBxLnfDW70lx29JDrkrhgjkuKeoVWBIMrYb95jNK6WoGH6W+pIwygl5FXT5Mg8XM6amO1yAvFQEyWyM4DNVpmf6kPjJrLgewO44Nlp3G1bEY="
-    skip_cleanup: true
-    tag: next
-    on:
-      branch: staging
-  - provider: npm
-    email: "jedrzejblew@gmail.com"
-    api_key:
-      secure: "MMPMf/4e3NyCQo3bi0PgoQyxjGesv4J1k/xMIiH9KvZnXtMx7QbpASX1fstPS3vNxtssjb2e+stkOAIiuAVsVUgm0UqdYfulRMefm2XAhNnQHT5aJtt5OBJlyzb6yiPXvDtqIml1uS0v1Su27/yP7s0z/gpJ5BanXz40Zc+3g6FHnvQQHjVSoLe3o3p692E7DdgUajq7S/JYHwOkehM/7Qc7QM/U/qc+3n1aDGu5q6l9ta9N8/uGQc2LwOeBW25rXvoOi2Hw1d/Vr7e9NrqBZeoX2fAPxt80+CrHQPpastoX9TJd4Q3UlRsw+HWqBhl8FbhW/QmqvuiiO/ZpZzymBc96FXunX0pPF4dxJf6Ahj6uOyoFHi6L0Y1cBsRNs5oU0Kd9ZTMWeis2LAe4qVngsQWu7VajNdCaFeDrvxZyOdfRJUf675qjv8wX2WFfJdXQpnBg4Al+YJRKYlPn9Y7SaERDa2olc4Wqb6uTByRx7FFa/jQ+alyWoenCazw5XFbstbSw6stpKD90E0ghuLCPu1lgW8x+vJbNTFyM9q7ivVF4aWBsz0+Q4bgr9t5lAyKaBxLnfDW70lx29JDrkrhgjkuKeoVWBIMrYb95jNK6WoGH6W+pIwygl5FXT5Mg8XM6amO1yAvFQEyWyM4DNVpmf6kPjJrLgewO44Nlp3G1bEY="
-    skip_cleanup: true
-    tag: alpha
-    on:
-      branch: development
+- provider: script
+  on:
+    branch: development
+  script: 
+    - npm version prerelease --preid=alpha
+    - npm publish --tag alpha
+- provider: script
+  on:
+    branch: staging
+  script: 
+    - npm version prerelease --preid=beta
+    - npm publish --tag next
+- provider: script
+  on:
+    branch: production
+  script: 
+    - npm publish --tag latest
