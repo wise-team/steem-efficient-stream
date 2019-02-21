@@ -5,4 +5,5 @@ cd "${DIR}"
 
 git checkout "${TRAVIS_BRANCH}"
 npm version prerelease --preid=alpha
+npm install
 npm publish --tag alpha
