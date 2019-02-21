@@ -1,3 +1,8 @@
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/wise-team/steem-efficient-stream/compare/v1.0.0-staging.0...v1.0.0) (2019-02-21)
+
+
+
 <a name="1.0.0-staging.0"></a>
 # [1.0.0-staging.0](https://github.com/wise-team/steem-efficient-stream/compare/v0.4.4-staging.0...v1.0.0-staging.0) (2019-02-21)
 
