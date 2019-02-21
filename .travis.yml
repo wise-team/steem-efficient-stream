@@ -16,8 +16,5 @@ before_deploy:
 
 deploy:
   - provider: script
-    on:
-      branch: development
-      tags: false
     script: bash scripts/ci/publish.sh
     skip_cleanup: true
