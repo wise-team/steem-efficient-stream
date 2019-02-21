@@ -29,6 +29,6 @@ deploy:
   - provider: script
     on:
       branch: production
-      tags: true
+      tags: false
     script: bash scripts/ci/publish-production.sh
     skip_cleanup: true
