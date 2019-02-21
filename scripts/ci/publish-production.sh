@@ -4,4 +4,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../.." # root dir
 cd "${DIR}"
 
 git checkout "${TRAVIS_BRANCH}"
+npm whoami
 npm publish --tag latest
