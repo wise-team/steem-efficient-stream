@@ -6,6 +6,6 @@ cd "${DIR}"
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [ "${BRANCH}" != "master" ]; then echo "Error: Branch must be master" && exit 1; fi
 
-npm version -i
-npm run conventional-github-releaser -p angular
+npm version -i patch
+conventional-github-releaser -p angular
 npm publish
