@@ -24,7 +24,11 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md",
     "version": "npm run changelog && git add CHANGELOG.md",
     "postversion": "git push --tags",
-    "github-release": "conventional-github-releaser -p angular"
+    "prepatch": "npm version prepatch --preid=$(git rev-parse --abbrev-ref HEAD)",
+    "preminor": "npm version preminor --preid=$(git rev-parse --abbrev-ref HEAD)",
+    "premajor": "npm version premajor --preid=$(git rev-parse --abbrev-ref HEAD)",
+    "ci-version": "node -e \"const pkgo = require('./package.json'); pkgo.version=pkgo.version.replace(/\\.b[0-9]+$/ui, '') + '.b' + Date.now();require('fs').writeFileSync('./package.json', JSON.stringify(pkgo, undefined, 2), 'UTF-8');\"",
+    "release": "npm version -i && npm run conventional-github-releaser -p angular"
   },
   "dependencies": {
     "axios": "^0.18.0",
