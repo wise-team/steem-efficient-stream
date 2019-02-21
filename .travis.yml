@@ -14,20 +14,14 @@ deploy:
   - provider: script
     on:
       branch: development
-    script: 
-      - git checkout "${TRAVIS_BRANCH}"
-      - npm version prerelease --preid=alpha
-      - npm publish --tag alpha
+      tags: false
+    script: bash scripts/ci/publish-development.sh
   - provider: script
     on:
       branch: staging
-    script: 
-      - git checkout "${TRAVIS_BRANCH}"
-      - npm version prerelease --preid=beta
-      - npm publish --tag next
+      tags: false
+    script: bash scripts/ci/publish-staging.sh
   - provider: script
     on:
       branch: production
-    script: 
-      - git checkout "${TRAVIS_BRANCH}"
-      - npm publish --tag latest
+    script: bash scripts/ci/publish-production.sh
