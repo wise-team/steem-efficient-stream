@@ -10,24 +10,24 @@ script:
   - echo "sleep random number of seconds 1-10 to prevent blockchain collisions" && sleep "$(( ( RANDOM % 10 )  + 1 ))"
   - npm run verify
 
-before_deploy:
-  - git checkout "${TRAVIS_BRANCH}"
-
 deploy:
   - provider: script
     on:
       branch: development
     script: 
+      - git checkout "${TRAVIS_BRANCH}"
       - npm version prerelease --preid=alpha
       - npm publish --tag alpha
   - provider: script
     on:
       branch: staging
     script: 
+      - git checkout "${TRAVIS_BRANCH}"
       - npm version prerelease --preid=beta
       - npm publish --tag next
   - provider: script
     on:
       branch: production
     script: 
+      - git checkout "${TRAVIS_BRANCH}"
       - npm publish --tag latest
