@@ -1,3 +1,8 @@
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/wise-team/steem-efficient-stream/compare/v0.4.0...v0.4.1) (2019-02-21)
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/wise-team/steem-efficient-stream/compare/v0.3.1-next.1...v0.4.0) (2019-02-21)
 
