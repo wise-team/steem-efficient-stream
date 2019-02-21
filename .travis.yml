@@ -16,12 +16,15 @@ deploy:
       branch: development
       tags: false
     script: bash scripts/ci/publish-development.sh
+    skip_cleanup: true
   - provider: script
     on:
       branch: staging
       tags: false
     script: bash scripts/ci/publish-staging.sh
+    skip_cleanup: true
   - provider: script
     on:
       branch: production
     script: bash scripts/ci/publish-production.sh
+    skip_cleanup: true
