@@ -21,5 +21,5 @@ deploy:
     script: npx semantic-release
     skip_cleanup: true
     on:
-      tags: true
+      tags: false
       all_branches: true
