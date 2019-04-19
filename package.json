@@ -96,7 +96,8 @@
     "url": "https://github.com/wise-team/steem-efficient-stream"
   },
   "keywords": [
-    "watchdog"
+    "steem",
+    "blockchain"
   ],
   "author": "The Wise Team (https://wise-team.io/)",
   "contributors": [
