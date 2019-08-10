@@ -28,7 +28,7 @@
     "lodash": "^4.17.11",
     "ow": "^0.12.0",
     "steem": "^0.7.4",
-    "universe-log": "^1.2.1"
+    "universe-log": "^4.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
