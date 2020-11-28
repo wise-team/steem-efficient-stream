@@ -38,7 +38,7 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/lodash": "^4.14.120",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.12.21",
+    "@types/node": "10.17.47",
     "@types/sinon": "^7.0.5",
     "@types/steem-js-alpha": "https://github.com/wise-team/types-for-steem-js/raw/master/bin/types-steem-js-alpha-3.1.2.tgz",
     "@types/uuid": "^3.4.4",
